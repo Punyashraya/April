@@ -8,128 +8,249 @@
 body {
   margin: 0;
   overflow: hidden;
-  background: #050505;
-  font-family: sans-serif;
+  font-family: Arial, sans-serif;
+  color: white;
 }
 
-/* 🌑 INTRO */
-#intro {
+/* 🎥 Background video */
+#bgVideo {
   position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: black;
-  z-index: 9999;
-  cursor: pointer;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  animation: zoom 20s infinite alternate;
 }
 
-/* 💓 HEART */
-.heart {
-  width: 140px;
-  pointer-events: none; /* 🔥 important */
-  animation: pulse 1.5s infinite;
+@keyframes zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
 }
 
-@keyframes pulse {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+/* 🌙 overlay */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+  z-index: -1;
 }
 
-.heart path {
-  fill: #4a0f2a;
-  stroke: #ff2e88;
-  stroke-width: 2.5;
-}
-
-/* 🔥 CRITICAL */
 canvas {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+}
+
+/* 💌 message box */
+.message-box {
+  position: absolute;
+  right: 5%;
+  top: 25%;
+  width: 320px;
+  font-size: 22px;
+  line-height: 1.6;
+}
+
+.message {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 1s ease;
+  margin-bottom: 12px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="intro">
-  <svg class="heart" viewBox="0 0 100 100">
-    <path d="M50 85 
-             L20 55 
-             A20 20 0 1 1 50 25 
-             A20 20 0 1 1 80 55 
-             Z"/>
-  </svg>
-</div>
+<!-- 🎥 Background -->
+<video id="bgVideo" autoplay loop muted>
+  <source src="sunset_picnic.mp4" type="video/mp4">
+</video>
 
+<div id="overlay"></div>
+
+<!-- 🌳 Canvas -->
 <canvas id="canvas"></canvas>
 
+<!-- 💬 Messages -->
+<div class="message-box" id="messageBox"></div>
+
+<!-- 🎵 Music -->
+<audio autoplay loop>
+  <source src="romantic.mp3" type="audio/mpeg">
+</audio>
+
 <script>
-const intro = document.getElementById("intro");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-/* 💓 CLICK (THIS WILL WORK 100%) */
-intro.onclick = () => {
-  console.log("CLICKED ✅");
-
-  intro.style.display = "none";
-
-  startApp();
-};
-
-/* 🌳 MAIN APP */
-function startApp(){
-
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-
-  function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener("resize", resize);
-
-  const hearts=[];
-
-  for(let i=0;i<800;i++){
-    let t=Math.random()*Math.PI*2;
-    let r=Math.random();
-
-    let x=16*Math.pow(Math.sin(t),3);
-    let y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
-
-    hearts.push({
-      x:canvas.width/2+x*15*r,
-      y:canvas.height/2+y*15*r,
-      size:Math.random()*3+4
-    });
-  }
-
-  function drawHeart(x,y,s){
-    ctx.beginPath();
-    ctx.moveTo(x,y);
-    ctx.bezierCurveTo(x,y-s,x-s,y-s,x-s,y);
-    ctx.bezierCurveTo(x-s,y+s,x,y+s*1.6,x,y+s*2);
-    ctx.bezierCurveTo(x,y+s*1.6,x+s,y+s,x+s,y);
-    ctx.bezierCurveTo(x+s,y-s,x,y-s,x,y);
-    ctx.fillStyle="#ff4d6d";
-    ctx.fill();
-  }
-
-  function animate(){
-    ctx.fillStyle="#050505";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    hearts.forEach(h=>{
-      drawHeart(h.x,h.y,h.size);
-    });
-
-    requestAnimationFrame(animate);
-  }
-
-  animate();
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+// 💖 Heart tree setup
+const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
+
+let hearts = [];
+
+function centerX(){ return canvas.width/2; }
+function centerY(){ return canvas.height*0.42; }
+
+// 🌸 Generate structured heart tree
+function generateTree(){
+  hearts = [];
+  for(let t=0; t<Math.PI*2; t+=0.02){
+    for(let r=0.3; r<=1; r+=0.15){
+
+      let x = 16*Math.pow(Math.sin(t),3);
+      let y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+
+      hearts.push({
+        baseX: centerX() + x*12*r,
+        baseY: centerY() + y*12*r,
+        size: 6 + Math.random()*4,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        phase: Math.random()*Math.PI*2,
+        fall: Math.random()*0.3
+      });
+    }
+  }
+}
+generateTree();
+
+// 🖱️ Mouse interaction
+let mouse = {x:0,y:0};
+
+window.addEventListener("mousemove", e=>{
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+// 💥 Click burst
+canvas.addEventListener("click", e=>{
+  for(let i=0;i<25;i++){
+    hearts.push({
+      baseX:e.clientX,
+      baseY:e.clientY,
+      size:5+Math.random()*5,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      phase: Math.random()*Math.PI*2,
+      fall:1+Math.random()
+    });
+  }
+});
+
+// 🌳 Tree trunk
+function drawTrunk(){
+  let x=centerX();
+  let y=canvas.height*0.75;
+
+  ctx.fillStyle="#6b3e26";
+  ctx.beginPath();
+  ctx.moveTo(x-15,y);
+  ctx.lineTo(x-5,y-160);
+  ctx.lineTo(x+5,y-160);
+  ctx.lineTo(x+15,y);
+  ctx.fill();
+}
+
+// ❤️ Heart shape
+function drawHeart(x,y,size,color){
+  ctx.beginPath();
+  ctx.fillStyle=color;
+  ctx.moveTo(x,y);
+
+  ctx.bezierCurveTo(x,y-size,x-size,y-size,x-size,y);
+  ctx.bezierCurveTo(x-size,y+size,x,y+size*1.6,x,y+size*2);
+  ctx.bezierCurveTo(x,y+size*1.6,x+size,y+size,x+size,y);
+  ctx.bezierCurveTo(x+size,y-size,x,y-size,x,y);
+
+  ctx.fill();
+}
+
+// ✨ Animation loop
+function animate(time){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  drawTrunk();
+
+  hearts.forEach(h=>{
+    let float = Math.sin(time*0.002 + h.phase)*2;
+
+    let dx = h.baseX - mouse.x;
+    let dy = h.baseY - mouse.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+
+    let push = dist<120 ? (120-dist)/6 : 0;
+
+    let x = h.baseX + (dx/dist)*push || h.baseX;
+    let y = h.baseY + float + (dy/dist)*push || h.baseY;
+
+    // 🍃 falling effect
+    h.baseY += h.fall*0.02;
+    if(h.baseY > canvas.height){
+      h.baseY = centerY();
+    }
+
+    drawHeart(x,y,h.size,h.color);
+  });
+
+  requestAnimationFrame(animate);
+}
+animate(0);
+
+// 💌 Messages
+const messages=[
+  "Hey you 💕",
+  "Happy Birthday 🎂",
+  "You make my world brighter ✨",
+  "Every moment with you matters 💖",
+  "This little world is just for you 🌸"
+];
+
+const box=document.getElementById("messageBox");
+
+messages.forEach((msg,i)=>{
+  setTimeout(()=>{
+    const div=document.createElement("div");
+    div.className="message";
+    div.textContent=msg;
+
+    box.appendChild(div);
+
+    setTimeout(()=>{
+      div.style.opacity=1;
+      div.style.transform="translateY(0)";
+    },100);
+
+  }, i*2500);
+});
+
+// 💖 Final surprise
+setTimeout(()=>{
+  const final=document.createElement("div");
+  final.textContent="I love you ❤️";
+  final.style.fontSize="32px";
+  final.style.marginTop="20px";
+  final.style.opacity=0;
+  final.style.transition="all 2s ease";
+
+  box.appendChild(final);
+
+  setTimeout(()=>{
+    final.style.opacity=1;
+  },200);
+
+},15000);
+
 </script>
 
 </body>
