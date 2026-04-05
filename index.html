@@ -23,15 +23,18 @@ body {
   align-items: center;
   z-index: 10;
   cursor: pointer;
+  transition: opacity 1.5s ease;
 }
 
-/* 💓 Neon outline heart */
+/* 💓 Proper neon heart */
 .heart {
+  position: relative;
   width: 80px;
   height: 80px;
-  position: relative;
   transform: rotate(45deg);
-  animation: pulse 1.6s infinite;
+  animation: pulse 1.5s infinite;
+  background: #8b1e4f;
+  box-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88;
 }
 
 .heart::before,
@@ -40,9 +43,9 @@ body {
   position: absolute;
   width: 80px;
   height: 80px;
-  border: 2px solid #ff2e88;
+  background: #8b1e4f;
   border-radius: 50%;
-  box-shadow: 0 0 15px #ff2e88, 0 0 30px #ff2e88;
+  box-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88;
 }
 
 .heart::before { top: -40px; left: 0; }
@@ -57,19 +60,17 @@ body {
 .message-box {
   position: absolute;
   right: 6%;
-  top: 35%;
+  top: 30%;
   width: 260px;
-  color: #f1f1f1;
+  color: white;
   font-size: 18px;
-  line-height: 1.8;
-  letter-spacing: 0.5px;
+  line-height: 1.7;
 }
 
 .message {
   opacity: 0;
   transform: translateY(20px);
-  filter: blur(6px);
-  transition: all 1.8s ease;
+  transition: all 1.5s ease;
   margin-bottom: 12px;
   text-shadow: 0 0 8px rgba(255,100,150,0.3);
 }
@@ -97,21 +98,28 @@ resize();
 window.addEventListener("resize", resize);
 
 const centerX = () => canvas.width/2;
-const groundY = () => canvas.height*0.75;
+const centerY = () => canvas.height*0.45;
 
-// 🌌 dark background
+// 🌌 background (simple dark aesthetic)
 function drawBackground(){
-  ctx.fillStyle = "#050505";
+  let grad = ctx.createRadialGradient(
+    centerX(), centerY(), 50,
+    centerX(), centerY(), 500
+  );
+  grad.addColorStop(0,"#111");
+  grad.addColorStop(1,"#050505");
+
+  ctx.fillStyle = grad;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// 💖 tree
+// 💖 ORIGINAL STYLE TREE
 const colors = ["#ff4d6d","#ff758f","#ff8fa3"];
 let hearts=[];
 
 function generateTree(){
   hearts=[];
-  for(let i=0;i<2400;i++){
+  for(let i=0;i<2200;i++){
     let t=Math.random()*Math.PI*2;
     let r=Math.random();
 
@@ -119,8 +127,8 @@ function generateTree(){
     let y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
 
     hearts.push({
-      x:centerX()+x*20*r,
-      y:canvas.height*0.45 + y*20*r,
+      x:centerX()+x*18*r,
+      y:centerY()+y*18*r,
       size:Math.random()*3+5,
       color:colors[Math.floor(Math.random()*colors.length)],
       phase:Math.random()*1000
@@ -129,20 +137,23 @@ function generateTree(){
 }
 generateTree();
 
-// 🌳 trunk grow animation
-let growth = 0;
+// 🖱️ hover interaction (RESTORED)
+let mouse={x:0,y:0};
+window.addEventListener("mousemove",e=>{
+  mouse.x=e.clientX;
+  mouse.y=e.clientY;
+});
 
-// 🌳 trunk
+// 🌳 trunk (clean)
 function drawTrunk(){
   let x=centerX();
-  let base=groundY();
-  let top=base - 250*growth;
+  let y=canvas.height*0.75;
 
   ctx.beginPath();
-  ctx.moveTo(x-25,base);
-  ctx.bezierCurveTo(x-50,base-100, x-20,top, x-10,top);
-  ctx.lineTo(x+10,top);
-  ctx.bezierCurveTo(x+20,top, x+50,base-100, x+25,base);
+  ctx.moveTo(x-25,y);
+  ctx.bezierCurveTo(x-40,y-100, x-15,y-200, x-10,y-250);
+  ctx.lineTo(x+10,y-250);
+  ctx.bezierCurveTo(x+15,y-200, x+40,y-100, x+25,y);
   ctx.fillStyle="#6b3e26";
   ctx.fill();
 }
@@ -161,43 +172,29 @@ function drawHeart(x,y,size,color){
   ctx.fill();
 }
 
-// 💓 falling heart
-let heartY = canvas.height/2;
-let dropping = false;
+let started=false;
 
-// 🎬 animation
+// ✨ animation
 function animate(time){
+  if(!started) return;
+
   drawBackground();
+  drawTrunk();
 
-  if(dropping){
-    heartY += 8;
+  hearts.forEach(h=>{
+    let float=Math.sin(time*0.002+h.phase)*2;
 
-    ctx.strokeStyle="#ff2e88";
-    ctx.lineWidth=2;
-    ctx.shadowBlur=15;
-    ctx.shadowColor="#ff2e88";
+    let dx=h.x-mouse.x;
+    let dy=h.y-mouse.y;
+    let dist=Math.sqrt(dx*dx+dy*dy);
 
-    ctx.beginPath();
-    ctx.arc(centerX(), heartY, 20, 0, Math.PI*2);
-    ctx.stroke();
+    let push=dist<120?(120-dist)/6:0;
 
-    if(heartY > groundY()){
-      dropping=false;
-    }
-  }
+    let x=h.x+(dx/dist)*push||h.x;
+    let y=h.y+float+(dy/dist)*push||h.y;
 
-  if(!dropping && growth < 1){
-    growth += 0.02;
-  }
-
-  if(growth > 0){
-    drawTrunk();
-
-    hearts.forEach(h=>{
-      let float=Math.sin(time*0.002+h.phase)*2;
-      drawHeart(h.x, h.y*growth + (1-growth)*groundY(), h.size, h.color);
-    });
-  }
+    drawHeart(x,y,h.size,h.color);
+  });
 
   requestAnimationFrame(animate);
 }
@@ -206,9 +203,9 @@ function animate(time){
 const messages=[
   "Hey you 💕",
   "Happy Birthday 🎂",
-  "You mean more than you know ✨",
-  "Every moment feels special with you 💖",
-  "This little world is yours 🌸"
+  "You make everything brighter ✨",
+  "Every moment with you matters 💖",
+  "This little world is for you 🌸"
 ];
 
 function showMessages(){
@@ -224,22 +221,24 @@ function showMessages(){
       setTimeout(()=>{
         div.style.opacity=1;
         div.style.transform="translateY(0)";
-        div.style.filter="blur(0)";
       },100);
 
-    }, i*3000);
+    }, i*2500);
   });
 }
 
-// 🌑 click intro
+// 🎬 intro click (SMOOTH TRANSITION)
 document.getElementById("intro").onclick=()=>{
-  document.getElementById("intro").style.display="none";
-  dropping = true;
-  animate(0);
+  const intro=document.getElementById("intro");
+
+  intro.style.opacity=0;
 
   setTimeout(()=>{
+    intro.style.display="none";
+    started=true;
+    animate(0);
     showMessages();
-  },4000);
+  },1200);
 };
 </script>
 
