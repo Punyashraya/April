@@ -1,135 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Code + Emotions + Her 🌹</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400&display=swap');
+<meta charset="UTF-8">
+<title>Happy Birthday ❤️</title>
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<style>
+body {
+  margin: 0;
+  background: black;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
 
-    body {
-      height: 100vh;
-      background: linear-gradient(135deg, #0a0a0a, #1a0033);
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
+canvas {
+  display: block;
+}
 
-    /* Floating particles */
-    .particle {
-      position: absolute;
-      background: rgba(255, 105, 180, 0.8);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: float 15s infinite linear;
-      box-shadow: 0 0 10px #ff69b4;
-    }
+/* Text styling */
+.message {
+  position: absolute;
+  top: 40%;
+  left: 8%;
+  color: white;
+}
 
-    @keyframes float {
-      0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translateY(-100vh) scale(1); opacity: 0; }
-    }
+.message h1 {
+  font-size: 24px;
+  margin: 0;
+}
 
-    .container {
-      text-align: center;
-      z-index: 10;
-      padding: 40px 60px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 30px;
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-      max-width: 420px;
-    }
-
-    .rose {
-      font-size: 120px;
-      margin-bottom: 20px;
-      animation: pulse 3s infinite ease-in-out;
-      filter: drop-shadow(0 0 30px #ff1493);
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-    }
-
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.8rem;
-      margin-bottom: 16px;
-      background: linear-gradient(90deg, #ff69b4, #c026d3);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    p {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      opacity: 0.9;
-      margin-bottom: 30px;
-    }
-
-    .heart {
-      display: inline-block;
-      animation: heartbeat 1.5s infinite;
-    }
-
-    @keyframes heartbeat {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.4); }
-    }
-  </style>
+.message p {
+  font-size: 18px;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <div class="rose">🌹</div>
-    <h1>Code + Emotions + Her</h1>
-    <p>Because some things can't be explained in code alone...<br>
-       They need a little bit of heart <span class="heart">❤️</span></p>
-    <p style="font-size: 0.95rem; opacity: 0.7;">Made with love and late-night debugging</p>
-  </div>
+<div class="message">
+  <h1>Hey you 💕</h1>
+  <p>Happy Birthday</p>
+</div>
 
-  <script>
-    // Create floating particles
-    function createParticle() {
-      const particle = document.createElement('div');
-      particle.classList.add('particle');
-      
-      const size = Math.random() * 8 + 4;
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${Math.random() * 100}vw`;
-      particle.style.animationDuration = `${Math.random() * 12 + 10}s`;
-      particle.style.animationDelay = `-${Math.random() * 15}s`;
-      particle.style.opacity = Math.random() * 0.7 + 0.3;
-      
-      document.body.appendChild(particle);
+<canvas id="canvas"></canvas>
 
-      setTimeout(() => {
-        particle.remove();
-      }, 25000);
-    }
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-    setInterval(createParticle, 120);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    // Initial burst
-    for (let i = 0; i < 40; i++) {
-      setTimeout(createParticle, i * 30);
-    }
-  </script>
+let particles = [];
+
+// Heart shape function
+function heartShape(t) {
+  return {
+    x: 16 * Math.pow(Math.sin(t), 3),
+    y: -(13 * Math.cos(t) - 5 * Math.cos(2*t)
+        - 2 * Math.cos(3*t) - Math.cos(4*t))
+  };
+}
+
+// Create particles
+for (let i = 0; i < 1500; i++) {
+  let t = Math.random() * Math.PI * 2;
+  let pos = heartShape(t);
+
+  particles.push({
+    x: canvas.width * 0.7 + pos.x * 10,
+    y: canvas.height * 0.4 + pos.y * 10,
+    size: Math.random() * 4 + 1,
+    color: `hsl(${Math.random()*360},100%,70%)`
+  });
+}
+
+// Draw trunk
+function drawTreeTrunk() {
+  ctx.fillStyle = "#f8c8dc";
+  ctx.fillRect(canvas.width * 0.69, canvas.height * 0.45, 20, 200);
+}
+
+// Draw particles
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawTreeTrunk();
+
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.fillStyle = p.color;
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
 </body>
 </html>
