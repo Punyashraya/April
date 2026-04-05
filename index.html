@@ -26,31 +26,24 @@ body {
   transition: opacity 1.5s ease;
 }
 
-/* 💓 SVG HEART */
+/* 💓 HEART */
 .heart {
   width: 90px;
   height: 90px;
-  animation: pulse 1.6s infinite;
+  animation: pulse 1.6s infinite, flicker 3s infinite;
 }
 
-.heart path {
-  fill: #5a0f2e;
-  stroke: #ff2e88;
-  stroke-width: 3;
-  filter: drop-shadow(0 0 6px #ff2e88)
-          drop-shadow(0 0 15px #ff2e88)
-          drop-shadow(0 0 30px #ff2e88);
-}
-
-.heart:hover path {
-  stroke: #ff4da6;
-  filter: drop-shadow(0 0 10px #ff4da6)
-          drop-shadow(0 0 25px #ff4da6);
-}
+/* ❌ removed drop-shadow */
+/* ✅ clean neon via layers */
 
 @keyframes pulse {
   0%,100% { transform: scale(1); }
   50% { transform: scale(1.15); }
+}
+
+@keyframes flicker {
+  0%,18%,22%,25%,53%,100% { opacity: 1; }
+  20%,24%,55% { opacity: 0.7; }
 }
 
 /* 💌 TEXT */
@@ -79,11 +72,50 @@ body {
 <!-- 💓 INTRO -->
 <div id="intro">
   <svg class="heart" viewBox="0 0 100 100">
+
+    <!-- glow layer 1 -->
     <path d="M50 90 
              L20 60 
              A20 20 0 1 1 50 30 
              A20 20 0 1 1 80 60 
-             Z"/>
+             Z"
+          fill="none"
+          stroke="#ff2e88"
+          stroke-width="10"
+          opacity="0.08"/>
+
+    <!-- glow layer 2 -->
+    <path d="M50 90 
+             L20 60 
+             A20 20 0 1 1 50 30 
+             A20 20 0 1 1 80 60 
+             Z"
+          fill="none"
+          stroke="#ff2e88"
+          stroke-width="6"
+          opacity="0.18"/>
+
+    <!-- glow layer 3 -->
+    <path d="M50 90 
+             L20 60 
+             A20 20 0 1 1 50 30 
+             A20 20 0 1 1 80 60 
+             Z"
+          fill="none"
+          stroke="#ff2e88"
+          stroke-width="3.5"
+          opacity="0.4"/>
+
+    <!-- main heart -->
+    <path d="M50 90 
+             L20 60 
+             A20 20 0 1 1 50 30 
+             A20 20 0 1 1 80 60 
+             Z"
+          fill="#4a0f2a"
+          stroke="#ff2e88"
+          stroke-width="2.5"/>
+
   </svg>
 </div>
 
@@ -117,7 +149,7 @@ function drawBackground(){
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// 💖 TREE (original style)
+// 💖 TREE
 const colors = ["#ff4d6d","#ff758f","#ff8fa3"];
 let hearts=[];
 
@@ -141,7 +173,7 @@ function generateTree(){
 }
 generateTree();
 
-// 🖱️ HOVER INTERACTION
+// 🖱️ HOVER
 let mouse={x:0,y:0};
 window.addEventListener("mousemove",e=>{
   mouse.x=e.clientX;
@@ -162,7 +194,7 @@ function drawTrunk(){
   ctx.fill();
 }
 
-// ❤️ HEART
+// ❤️ HEART DRAW
 function drawHeart(x,y,size,color){
   ctx.beginPath();
   ctx.fillStyle=color;
@@ -231,7 +263,7 @@ function showMessages(){
   });
 }
 
-// 🎬 TRANSITION
+// 🎬 TRANSITION (UNCHANGED — WORKING)
 document.getElementById("intro").onclick=()=>{
   const intro=document.getElementById("intro");
 
