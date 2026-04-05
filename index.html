@@ -7,7 +7,7 @@
 <style>
 body {
   margin: 0;
-  background: black;
+  background: #000;
   overflow: hidden;
   font-family: Arial, sans-serif;
   color: white;
@@ -21,7 +21,7 @@ canvas {
 .message-box {
   position: absolute;
   right: 6%;
-  top: 30%;
+  top: 25%;
   width: 280px;
   font-size: 20px;
   line-height: 1.6;
@@ -53,13 +53,13 @@ canvas.height = window.innerHeight;
 
 let hearts = [];
 
-// 🍁 Soft aesthetic palette
+// 🎨 Better aesthetic palette
 const colors = [
-  "#ff8fa3", "#ff758f", "#ffb3c1",
-  "#ffd166", "#f4a261", "#ff6b6b"
+  "#ff4d6d", "#ff758f", "#ff8fa3",
+  "#ffb347", "#ffd166"
 ];
 
-// ❤️ Heart shape formula
+// ❤️ Heart formula
 function heartShape(t) {
   return {
     x: 16 * Math.pow(Math.sin(t), 3),
@@ -68,50 +68,76 @@ function heartShape(t) {
   };
 }
 
-// 💖 CREATE DENSE TREE (MAIN FOCUS)
-for (let i = 0; i < 3500; i++) {
+// 💖 Create dense but spaced leaves
+for (let i = 0; i < 2800; i++) {
   let t = Math.random() * Math.PI * 2;
   let r = Math.random();
 
   let pos = heartShape(t);
 
   hearts.push({
-    x: canvas.width * 0.35 + pos.x * 18 * r,
-    y: canvas.height * 0.45 + pos.y * 18 * r,
-    size: Math.random() * 5 + 3,
+    x: canvas.width * 0.35 + pos.x * 17 * r,
+    y: canvas.height * 0.42 + pos.y * 17 * r,
+    size: Math.random() * 4 + 4, // 🔥 more uniform = prettier
     color: colors[Math.floor(Math.random() * colors.length)],
     offset: Math.random() * 1000
   });
 }
 
-// 🌳 Subtle trunk (thin & soft)
+// 🌳 Clear visible trunk
 function drawTrunk() {
-  ctx.fillStyle = "#e5a5a5";
-  ctx.fillRect(canvas.width * 0.345, canvas.height * 0.55, 18, 220);
+  ctx.fillStyle = "#8b5e3c";
+  ctx.fillRect(canvas.width * 0.345, canvas.height * 0.52, 22, 240);
 }
 
-// 💖 Draw heart leaf
+// 🌿 Ground (garden base)
+function drawGround() {
+  ctx.fillStyle = "#1f3d2b";
+  ctx.fillRect(0, canvas.height * 0.75, canvas.width, canvas.height * 0.25);
+}
+
+// 🧺 Simple picnic couple (minimal silhouette)
+function drawPicnic() {
+  let x = canvas.width * 0.32;
+  let y = canvas.height * 0.75;
+
+  // blanket
+  ctx.fillStyle = "#ff8fa3";
+  ctx.fillRect(x - 40, y + 10, 80, 10);
+
+  // two heads
+  ctx.beginPath();
+  ctx.arc(x - 15, y, 6, 0, Math.PI * 2);
+  ctx.arc(x + 15, y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+}
+
+// 💖 Crisp heart
 function drawHeart(x, y, size, color) {
   ctx.beginPath();
   ctx.fillStyle = color;
 
   ctx.moveTo(x, y);
   ctx.bezierCurveTo(x, y - size, x - size, y - size, x - size, y);
-  ctx.bezierCurveTo(x - size, y + size, x, y + size * 1.5, x, y + size * 2);
-  ctx.bezierCurveTo(x, y + size * 1.5, x + size, y + size, x + size, y);
+  ctx.bezierCurveTo(x - size, y + size, x, y + size * 1.6, x, y + size * 2);
+  ctx.bezierCurveTo(x, y + size * 1.6, x + size, y + size, x + size, y);
   ctx.bezierCurveTo(x + size, y - size, x, y - size, x, y);
 
+  ctx.closePath();
   ctx.fill();
 }
 
-// ✨ Smooth animation (VERY subtle)
+// ✨ Smooth + visible vibration
 function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  drawGround();
   drawTrunk();
+  drawPicnic();
 
   hearts.forEach(h => {
-    let float = Math.sin(time * 0.001 + h.offset) * 1.5; // 🔥 slower + softer
+    let float = Math.sin(time * 0.002 + h.offset) * 2.5; // 🔥 better motion
     drawHeart(h.x, h.y + float, h.size, h.color);
   });
 
@@ -124,9 +150,9 @@ animate();
 const messages = [
   "Hey you 💕",
   "Happy Birthday 🎂",
-  "You make everything better ✨",
-  "Stay amazing always 💖",
-  "This is just for you 🌸"
+  "You make everything brighter ✨",
+  "I’m lucky to know you 💖",
+  "This little world is for you 🌸"
 ];
 
 const box = document.getElementById("messageBox");
@@ -144,6 +170,7 @@ function addMessage() {
 }
 
 setInterval(addMessage, 2500);
+
 </script>
 
 </body>
