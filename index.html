@@ -2,28 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>For You ❤️</title>
-
+<title>Sunset Heart Tree Picnic ❤️</title>
 <style>
 body {
   margin: 0;
-  background: #000;
   overflow: hidden;
   font-family: Arial, sans-serif;
-  color: white;
 }
 
-canvas {
-  display: block;
-}
+canvas { display: block; }
 
 .message-box {
   position: absolute;
-  right: 6%;
+  right: 5%;
   top: 25%;
-  width: 280px;
+  width: 300px;
   font-size: 20px;
   line-height: 1.6;
+  color: #fff;
 }
 
 .message {
@@ -32,12 +28,9 @@ canvas {
   animation: fadeIn 1s forwards;
 }
 
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
+@keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
-
 <body>
 
 <canvas id="canvas"></canvas>
@@ -46,176 +39,153 @@ canvas {
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+// Heart leaf colors for sunset
+const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
+
 let hearts = [];
-
-// 🎨 aesthetic colors
-const colors = [
-  "#ff4d6d","#ff758f","#ff8fa3",
-  "#ffd166","#f4a261"
-];
-
-// ❤️ heart math
-function heartShape(t) {
-  return {
-    x: 16 * Math.pow(Math.sin(t), 3),
-    y: -(13 * Math.cos(t) - 5 * Math.cos(2*t)
-        - 2 * Math.cos(3*t) - Math.cos(4*t))
-  };
-}
-
-// 💖 dense canopy
-for (let i = 0; i < 3000; i++) {
+for (let i = 0; i < 2500; i++) {
   let t = Math.random() * Math.PI * 2;
   let r = Math.random();
-
-  let pos = heartShape(t);
-
+  let pos = {
+    x: 16*Math.pow(Math.sin(t),3),
+    y: -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))
+  };
   hearts.push({
-    x: canvas.width * 0.35 + pos.x * 18 * r,
-    y: canvas.height * 0.42 + pos.y * 18 * r,
-    size: Math.random() * 4 + 4,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    offset: Math.random() * 1000
+    x: canvas.width*0.5 + pos.x*18*r,
+    y: canvas.height*0.4 + pos.y*18*r,
+    size: Math.random()*4 + 4,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    offset: Math.random()*1000
   });
 }
 
-// 🌳 detailed trunk (tapered)
-function drawTrunk(time) {
-  let baseX = canvas.width * 0.35;
-  let baseY = canvas.height * 0.75;
-
+// Draw trunk
+function drawTrunk() {
+  let baseX = canvas.width*0.5;
+  let baseY = canvas.height*0.75;
   ctx.beginPath();
-  ctx.moveTo(baseX - 15, baseY);
-  ctx.lineTo(baseX - 5, baseY - 120);
-  ctx.lineTo(baseX + 5, baseY - 120);
-  ctx.lineTo(baseX + 15, baseY);
+  ctx.moveTo(baseX-20, baseY);
+  ctx.lineTo(baseX-8, baseY-160);
+  ctx.lineTo(baseX+8, baseY-160);
+  ctx.lineTo(baseX+20, baseY);
   ctx.closePath();
-
   ctx.fillStyle = "#8b5e3c";
   ctx.fill();
-
-  // subtle highlight
   ctx.strokeStyle = "#a9745b";
   ctx.lineWidth = 2;
   ctx.stroke();
 }
 
-// 🌿 ground gradient
+// Draw garden ground
 function drawGround() {
   let grd = ctx.createLinearGradient(0, canvas.height*0.7, 0, canvas.height);
   grd.addColorStop(0, "#1f3d2b");
   grd.addColorStop(1, "#0b1f14");
-
   ctx.fillStyle = grd;
-  ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height);
+  ctx.fillRect(0, canvas.height*0.7, canvas.width, canvas.height);
 }
 
-// 🌸 little flowers
+// Flowers
 function drawFlowers() {
-  for (let i = 0; i < 40; i++) {
-    let x = Math.random() * canvas.width;
-    let y = canvas.height * 0.75 + Math.random() * 80;
-
-    ctx.fillStyle = "#ff8fa3";
+  for(let i=0;i<40;i++){
+    let x = Math.random()*canvas.width;
+    let y = canvas.height*0.7 + Math.random()*80;
+    ctx.fillStyle="#ff8fa3";
     ctx.beginPath();
-    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.arc(x,y,2,0,Math.PI*2);
     ctx.fill();
   }
 }
 
-// 🧺 animated couple
-function drawCouple(time) {
-  let x = canvas.width * 0.32;
-  let y = canvas.height * 0.75;
+// Cartoon couple picnic
+function drawCouple(time){
+  let x=canvas.width*0.48;
+  let y=canvas.height*0.75;
+  let sway = Math.sin(time*0.002)*2;
 
-  let sway = Math.sin(time * 0.002) * 2;
+  ctx.strokeStyle="white"; ctx.lineWidth=2;
 
-  // bodies
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 2;
-
-  // person 1
+  // Person 1
   ctx.beginPath();
-  ctx.arc(x - 12, y - 10 + sway, 6, 0, Math.PI * 2);
-  ctx.moveTo(x - 12, y - 4 + sway);
-  ctx.lineTo(x - 12, y + 10);
+  ctx.arc(x-15, y-10+sway, 6,0,Math.PI*2);
+  ctx.moveTo(x-15, y-4+sway);
+  ctx.lineTo(x-15, y+10);
   ctx.stroke();
 
-  // person 2 leaning
+  // Person 2 leaning
   ctx.beginPath();
-  ctx.arc(x + 12, y - 10 + sway, 6, 0, Math.PI * 2);
-  ctx.moveTo(x + 12, y - 4 + sway);
-  ctx.lineTo(x + 5, y + 10);
+  ctx.arc(x+15, y-10+sway, 6,0,Math.PI*2);
+  ctx.moveTo(x+15, y-4+sway);
+  ctx.lineTo(x+5, y+10);
   ctx.stroke();
 
-  // blanket
-  ctx.fillStyle = "#ff8fa3";
-  ctx.fillRect(x - 25, y + 10, 50, 8);
+  // Blanket
+  ctx.fillStyle="#ff8fa3";
+  ctx.fillRect(x-25, y+10, 50,8);
 }
 
-// 💖 crisp heart
-function drawHeart(x, y, size, color) {
+// Draw heart leaf
+function drawHeart(x,y,size,color){
   ctx.beginPath();
-  ctx.fillStyle = color;
-
-  ctx.moveTo(x, y);
-  ctx.bezierCurveTo(x, y - size, x - size, y - size, x - size, y);
-  ctx.bezierCurveTo(x - size, y + size, x, y + size * 1.6, x, y + size * 2);
-  ctx.bezierCurveTo(x, y + size * 1.6, x + size, y + size, x + size, y);
-  ctx.bezierCurveTo(x + size, y - size, x, y - size, x, y);
-
+  ctx.fillStyle=color;
+  ctx.moveTo(x,y);
+  ctx.bezierCurveTo(x,y-size,x-size,y-size,x-size,y);
+  ctx.bezierCurveTo(x-size,y+size,x,y+size*1.6,x,y+size*2);
+  ctx.bezierCurveTo(x,y+size*1.6,x+size,y+size,x+size,y);
+  ctx.bezierCurveTo(x+size,y-size,x,y-size,x,y);
   ctx.fill();
 }
 
-// ✨ animate
-function animate(time) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Animate
+function animate(time){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Sunset background gradient
+  let bgGrad = ctx.createLinearGradient(0,0,0,canvas.height);
+  bgGrad.addColorStop(0,"#ffb347");
+  bgGrad.addColorStop(1,"#ff3c3c");
+  ctx.fillStyle=bgGrad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
   drawGround();
   drawFlowers();
-  drawTrunk(time);
+  drawTrunk();
   drawCouple(time);
 
-  hearts.forEach(h => {
-    let float = Math.sin(time * 0.002 + h.offset) * 2;
-    drawHeart(h.x, h.y + float, h.size, h.color);
+  hearts.forEach(h=>{
+    let float = Math.sin(time*0.002+h.offset)*2.5;
+    drawHeart(h.x,h.y+float,h.size,h.color);
   });
 
   requestAnimationFrame(animate);
 }
 
-animate();
+animate(0);
 
-// 💬 messages
+// Messages
 const messages = [
   "Hey you 💕",
   "Happy Birthday 🎂",
   "You make everything brighter ✨",
-  "I’m lucky to have you 💖",
-  "This little world is for you 🌸"
+  "Stay amazing always 💖",
+  "This world is for you 🌸"
 ];
 
 const box = document.getElementById("messageBox");
-let index = 0;
-
-function addMessage() {
-  if (index >= messages.length) return;
-
-  const div = document.createElement("div");
-  div.className = "message";
-  div.textContent = messages[index];
-
+let index=0;
+function addMessage(){
+  if(index>=messages.length) return;
+  const div=document.createElement("div");
+  div.className="message";
+  div.textContent=messages[index];
   box.appendChild(div);
   index++;
 }
-
-setInterval(addMessage, 2500);
+setInterval(addMessage,2500);
 
 </script>
-
 </body>
 </html>
