@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sunset Heart Tree Picnic ❤️</title>
+<title>For You ❤️</title>
+
 <style>
 body {
   margin: 0;
@@ -11,6 +12,7 @@ body {
   color: white;
 }
 
+/* 🎥 Background video */
 #bgVideo {
   position: fixed;
   top: 0;
@@ -19,16 +21,22 @@ body {
   min-height: 100%;
   object-fit: cover;
   z-index: -2;
+  animation: zoom 20s infinite alternate;
 }
 
-/* semi-transparent overlay to highlight tree */
+@keyframes zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+
+/* 🌙 overlay */
 #overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.3);
+  background: radial-gradient(circle at center, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
   z-index: -1;
 }
 
@@ -36,136 +44,213 @@ canvas {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1;
 }
 
+/* 💌 message box */
 .message-box {
   position: absolute;
   right: 5%;
   top: 25%;
-  width: 300px;
+  width: 320px;
   font-size: 22px;
   line-height: 1.6;
-  z-index: 2;
 }
 
 .message {
   opacity: 0;
-  margin-bottom: 10px;
-  animation: fadeIn 1s forwards;
+  transform: translateY(20px);
+  transition: all 1s ease;
+  margin-bottom: 12px;
 }
-
-@keyframes fadeIn { to { opacity: 1; } }
 </style>
 </head>
+
 <body>
 
-<!-- Background video -->
+<!-- 🎥 Background -->
 <video id="bgVideo" autoplay loop muted>
   <source src="sunset_picnic.mp4" type="video/mp4">
-  Your browser does not support the video tag.
 </video>
 
-<!-- Dark overlay for better tree contrast -->
 <div id="overlay"></div>
 
-<!-- Canvas for tree and hearts -->
+<!-- 🌳 Canvas -->
 <canvas id="canvas"></canvas>
 
-<!-- Messages -->
+<!-- 💬 Messages -->
 <div class="message-box" id="messageBox"></div>
+
+<!-- 🎵 Music -->
+<audio autoplay loop>
+  <source src="romantic.mp3" type="audio/mpeg">
+</audio>
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
-// Heart leaf colors
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+// 💖 Heart tree setup
 const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
 
 let hearts = [];
-for (let i = 0; i < 2000; i++) {
-  let t = Math.random() * Math.PI * 2;
-  let r = Math.random();
-  let pos = {
-    x: 16*Math.pow(Math.sin(t),3),
-    y: -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))
-  };
-  hearts.push({
-    x: canvas.width*0.5 + pos.x*20*r,
-    y: canvas.height*0.45 + pos.y*20*r,
-    size: Math.random()*4 + 5,
-    color: colors[Math.floor(Math.random()*colors.length)],
-    offset: Math.random()*1000
-  });
-}
 
-// Draw trunk
-function drawTrunk() {
-  let baseX = canvas.width*0.5;
-  let baseY = canvas.height*0.75;
+function centerX(){ return canvas.width/2; }
+function centerY(){ return canvas.height*0.42; }
+
+// 🌸 Generate structured heart tree
+function generateTree(){
+  hearts = [];
+  for(let t=0; t<Math.PI*2; t+=0.02){
+    for(let r=0.3; r<=1; r+=0.15){
+
+      let x = 16*Math.pow(Math.sin(t),3);
+      let y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+
+      hearts.push({
+        baseX: centerX() + x*12*r,
+        baseY: centerY() + y*12*r,
+        size: 6 + Math.random()*4,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        phase: Math.random()*Math.PI*2,
+        fall: Math.random()*0.3
+      });
+    }
+  }
+}
+generateTree();
+
+// 🖱️ Mouse interaction
+let mouse = {x:0,y:0};
+
+window.addEventListener("mousemove", e=>{
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+// 💥 Click burst
+canvas.addEventListener("click", e=>{
+  for(let i=0;i<25;i++){
+    hearts.push({
+      baseX:e.clientX,
+      baseY:e.clientY,
+      size:5+Math.random()*5,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      phase: Math.random()*Math.PI*2,
+      fall:1+Math.random()
+    });
+  }
+});
+
+// 🌳 Tree trunk
+function drawTrunk(){
+  let x=centerX();
+  let y=canvas.height*0.75;
+
+  ctx.fillStyle="#6b3e26";
   ctx.beginPath();
-  ctx.moveTo(baseX-20, baseY);
-  ctx.lineTo(baseX-10, baseY-160);
-  ctx.lineTo(baseX+10, baseY-160);
-  ctx.lineTo(baseX+20, baseY);
-  ctx.closePath();
-  ctx.fillStyle = "#8b5e3c";
+  ctx.moveTo(x-15,y);
+  ctx.lineTo(x-5,y-160);
+  ctx.lineTo(x+5,y-160);
+  ctx.lineTo(x+15,y);
   ctx.fill();
-  ctx.strokeStyle = "#a9745b";
-  ctx.lineWidth = 2;
-  ctx.stroke();
 }
 
-// Draw heart leaf
+// ❤️ Heart shape
 function drawHeart(x,y,size,color){
   ctx.beginPath();
   ctx.fillStyle=color;
   ctx.moveTo(x,y);
+
   ctx.bezierCurveTo(x,y-size,x-size,y-size,x-size,y);
   ctx.bezierCurveTo(x-size,y+size,x,y+size*1.6,x,y+size*2);
   ctx.bezierCurveTo(x,y+size*1.6,x+size,y+size,x+size,y);
   ctx.bezierCurveTo(x+size,y-size,x,y-size,x,y);
+
   ctx.fill();
 }
 
-// Animate tree and hearts
+// ✨ Animation loop
 function animate(time){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
   drawTrunk();
 
   hearts.forEach(h=>{
-    let float = Math.sin(time*0.002+h.offset)*2;
-    drawHeart(h.x,h.y+float,h.size,h.color);
+    let float = Math.sin(time*0.002 + h.phase)*2;
+
+    let dx = h.baseX - mouse.x;
+    let dy = h.baseY - mouse.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+
+    let push = dist<120 ? (120-dist)/6 : 0;
+
+    let x = h.baseX + (dx/dist)*push || h.baseX;
+    let y = h.baseY + float + (dy/dist)*push || h.baseY;
+
+    // 🍃 falling effect
+    h.baseY += h.fall*0.02;
+    if(h.baseY > canvas.height){
+      h.baseY = centerY();
+    }
+
+    drawHeart(x,y,h.size,h.color);
   });
 
   requestAnimationFrame(animate);
 }
-
 animate(0);
 
-// Messages
-const messages = [
+// 💌 Messages
+const messages=[
   "Hey you 💕",
   "Happy Birthday 🎂",
-  "You make everything brighter ✨",
-  "Stay amazing always 💖",
-  "This world is for you 🌸"
+  "You make my world brighter ✨",
+  "Every moment with you matters 💖",
+  "This little world is just for you 🌸"
 ];
 
-const box = document.getElementById("messageBox");
-let index = 0;
-function addMessage(){
-  if(index>=messages.length) return;
-  const div=document.createElement("div");
-  div.className="message";
-  div.textContent=messages[index];
-  box.appendChild(div);
-  index++;
-}
+const box=document.getElementById("messageBox");
 
-setInterval(addMessage,2500);
+messages.forEach((msg,i)=>{
+  setTimeout(()=>{
+    const div=document.createElement("div");
+    div.className="message";
+    div.textContent=msg;
+
+    box.appendChild(div);
+
+    setTimeout(()=>{
+      div.style.opacity=1;
+      div.style.transform="translateY(0)";
+    },100);
+
+  }, i*2500);
+});
+
+// 💖 Final surprise
+setTimeout(()=>{
+  const final=document.createElement("div");
+  final.textContent="I love you ❤️";
+  final.style.fontSize="32px";
+  final.style.marginTop="20px";
+  final.style.opacity=0;
+  final.style.transition="all 2s ease";
+
+  box.appendChild(final);
+
+  setTimeout(()=>{
+    final.style.opacity=1;
+  },200);
+
+},15000);
+
 </script>
 
 </body>
