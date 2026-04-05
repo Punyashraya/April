@@ -12,83 +12,84 @@ body {
   background: black;
 }
 
-/* 🌑 Intro screen */
+/* 🌑 INTRO */
 #intro {
   position: fixed;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, #000000, #050505);
+  background: black;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   z-index: 10;
   cursor: pointer;
+  transition: opacity 1.5s ease;
 }
 
-/* 💓 Pulsating heart */
+/* 💓 Neon heart */
 .heart {
-  width: 60px;
-  height: 60px;
-  background: #ff4d6d;
+  width: 70px;
+  height: 70px;
+  background: #ff2e88;
   transform: rotate(45deg);
   animation: pulse 1.5s infinite;
-  position: relative;
+  box-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88, 0 0 80px #ff2e88;
 }
 
 .heart::before,
 .heart::after {
   content: "";
-  width: 60px;
-  height: 60px;
-  background: #ff4d6d;
+  width: 70px;
+  height: 70px;
+  background: #ff2e88;
   border-radius: 50%;
   position: absolute;
 }
 
-.heart::before { top: -30px; left: 0; }
-.heart::after { left: -30px; top: 0; }
+.heart::before { top: -35px; left: 0; }
+.heart::after { left: -35px; top: 0; }
 
 @keyframes pulse {
   0%,100% { transform: scale(1) rotate(45deg); }
-  50% { transform: scale(1.2) rotate(45deg); }
+  50% { transform: scale(1.25) rotate(45deg); }
 }
 
 #introText {
   margin-top: 20px;
   color: rgba(255,255,255,0.6);
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 2px;
 }
 
-/* 🌸 Messages */
+/* 💌 TEXT */
 .message-box {
   position: absolute;
   right: 6%;
   top: 30%;
-  width: 320px;
+  width: 280px;
   color: white;
-  font-size: 24px;
-  line-height: 1.8;
-  font-weight: 300;
+  font-size: 20px;
+  line-height: 1.7;
+  text-align: left;
 }
 
 .message {
   opacity: 0;
-  transform: translateY(30px);
-  filter: blur(10px);
+  transform: translateY(20px);
+  filter: blur(8px);
   transition: all 1.5s ease;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.3);
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🌑 INTRO -->
 <div id="intro">
   <div class="heart"></div>
-  <div id="introText">tap gently 💕</div>
+  <div id="introText">tap 💕</div>
 </div>
 
 <canvas id="canvas"></canvas>
@@ -108,7 +109,7 @@ window.addEventListener("resize", resize);
 const centerX = () => canvas.width/2;
 const centerY = () => canvas.height*0.42;
 
-// 🌅 BACKGROUND (soft & romantic)
+// 🌅 background
 function drawBackground(){
   let sky = ctx.createLinearGradient(0,0,0,canvas.height);
   sky.addColorStop(0,"#2b1055");
@@ -157,6 +158,13 @@ function generateTree(){
 }
 generateTree();
 
+// 🖱️ hover interaction (RESTORED)
+let mouse={x:0,y:0};
+window.addEventListener("mousemove",e=>{
+  mouse.x=e.clientX;
+  mouse.y=e.clientY;
+});
+
 // 🌳 trunk
 function drawTrunk(){
   let x=centerX();
@@ -185,30 +193,45 @@ function drawHeart(x,y,size,color){
   ctx.fill();
 }
 
-// 🎬 animation control
-let started = false;
+let started=false;
 
+// ✨ animation
 function animate(time){
   if(!started) return;
+
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, time*0.0005); // fade-in effect
 
   drawBackground();
   drawTrunk();
 
   hearts.forEach(h=>{
     let float=Math.sin(time*0.002+h.phase)*2;
-    drawHeart(h.x, h.y+float, h.size, h.color);
+
+    let dx=h.x-mouse.x;
+    let dy=h.y-mouse.y;
+    let dist=Math.sqrt(dx*dx+dy*dy);
+
+    let push=dist<120?(120-dist)/5:0;
+
+    let x=h.x+(dx/dist)*push||h.x;
+    let y=h.y+float+(dy/dist)*push||h.y;
+
+    drawHeart(x,y,h.size,h.color);
   });
+
+  ctx.restore();
 
   requestAnimationFrame(animate);
 }
 
-// 💌 messages (aesthetic)
+// 💌 messages (refined)
 const messages=[
-  "Hey you...",
+  "Hey you 💕",
   "Happy Birthday 🎂",
-  "You make my world brighter ✨",
-  "Every moment with you matters",
-  "This little world is for you 💖"
+  "You make everything brighter ✨",
+  "Every moment with you matters 💖",
+  "This little world is for you 🌸"
 ];
 
 function showMessages(){
@@ -232,15 +255,15 @@ function showMessages(){
 }
 
 // 🌑 intro click
-document.getElementById("intro").onclick = ()=>{
+document.getElementById("intro").onclick=()=>{
   document.getElementById("intro").style.opacity=0;
 
   setTimeout(()=>{
     document.getElementById("intro").style.display="none";
-    started = true;
+    started=true;
     animate(0);
     showMessages();
-  },1000);
+  },1500);
 };
 
 </script>
