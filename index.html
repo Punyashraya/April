@@ -26,33 +26,30 @@ body {
   transition: opacity 1.5s ease;
 }
 
-/* 💓 CLEAN HEART */
+/* 💓 HEART (NO SQUARE GLOW) */
 .heart {
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   animation: pulse 1.6s infinite;
 }
 
 .heart path {
   fill: #5a0f2e;
   stroke: #ff2e88;
-  stroke-width: 3;
-  stroke-linejoin: round;
-  filter: blur(0.5px); /* subtle smooth edge */
+  stroke-width: 2.5;
 }
 
-/* separate glow layer (no square issue) */
-.heart path.glow {
-  fill: none;
-  stroke: #ff2e88;
-  stroke-width: 6;
-  opacity: 0.6;
-  filter: blur(8px);
+/* layered glow (cleaner than drop-shadow) */
+.heart {
+  filter:
+    drop-shadow(0 0 4px #ff2e88)
+    drop-shadow(0 0 10px #ff2e88)
+    drop-shadow(0 0 20px #ff2e88);
 }
 
 @keyframes pulse {
   0%,100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  50% { transform: scale(1.12); }
 }
 
 /* 💌 TEXT */
@@ -81,8 +78,11 @@ body {
 <!-- 💓 INTRO -->
 <div id="intro">
   <svg class="heart" viewBox="0 0 100 100">
-    <path class="glow" d="M50 90 L20 60 A20 20 0 1 1 50 30 A20 20 0 1 1 80 60 Z"/>
-    <path d="M50 90 L20 60 A20 20 0 1 1 50 30 A20 20 0 1 1 80 60 Z"/>
+    <path d="M50 90 
+             L20 60 
+             A20 20 0 1 1 50 30 
+             A20 20 0 1 1 80 60 
+             Z"/>
   </svg>
 </div>
 
@@ -126,8 +126,8 @@ function generateTree(){
   branches=[];
 
   let trunkTop = {
-    x: centerX(),
-    y: canvas.height*0.55
+    x:centerX(),
+    y:canvas.height*0.5
   };
 
   for(let i=0;i<2200;i++){
@@ -148,18 +148,139 @@ function generateTree(){
       phase:Math.random()*1000
     });
 
-    // 🌿 curved branch (static)
+    // 🌿 curved branch (STATIC)
     branches.push({
-      startX: trunkTop.x,
-      startY: trunkTop.y,
-      cpX: (trunkTop.x + hx)/2 + (Math.random()*40-20),
-      cpY: (trunkTop.y + hy)/2,
-      endX: hx,
-      endY: hy
+      sx: trunkTop.x,
+      sy: trunkTop.y,
+      c1x: trunkTop.x + (hx-trunkTop.x)*0.3 + (Math.random()*40-20),
+      c1y: trunkTop.y + (hy-trunkTop.y)*0.3,
+      c2x: trunkTop.x + (hx-trunkTop.x)*0.7 + (Math.random()*40-20),
+      c2y: trunkTop.y + (hy-trunkTop.y)*0.7,
+      ex: hx,
+      ey: hy
     });
   }
 }
 generateTree();
 
-// 🖱️ interaction
-let mouse={x:0
+// 🖱️ HOVER
+let mouse={x:0,y:0};
+window.addEventListener("mousemove",e=>{
+  mouse.x=e.clientX;
+  mouse.y=e.clientY;
+});
+
+// 🌳 TRUNK
+function drawTrunk(){
+  let x=centerX();
+  let y=canvas.height*0.75;
+
+  ctx.beginPath();
+  ctx.moveTo(x-25,y);
+  ctx.bezierCurveTo(x-40,y-100, x-15,y-200, x-10,y-250);
+  ctx.lineTo(x+10,y-250);
+  ctx.bezierCurveTo(x+15,y-200, x+40,y-100, x+25,y);
+  ctx.fillStyle="#6b3e26";
+  ctx.fill();
+}
+
+// 🌿 BRANCHES
+function drawBranches(){
+  ctx.strokeStyle="rgba(90,50,20,0.18)";
+  ctx.lineWidth=0.6;
+
+  branches.forEach(b=>{
+    ctx.beginPath();
+    ctx.moveTo(b.sx,b.sy);
+    ctx.bezierCurveTo(b.c1x,b.c1y,b.c2x,b.c2y,b.ex,b.ey);
+    ctx.stroke();
+  });
+}
+
+// ❤️ HEART
+function drawHeart(x,y,size,color){
+  ctx.beginPath();
+  ctx.fillStyle=color;
+
+  ctx.moveTo(x,y);
+  ctx.bezierCurveTo(x,y-size,x-size,y-size,x-size,y);
+  ctx.bezierCurveTo(x-size,y+size,x,y+size*1.6,x,y+size*2);
+  ctx.bezierCurveTo(x,y+size*1.6,x+size,y+size,x+size,y);
+  ctx.bezierCurveTo(x+size,y-size,x,y-size,x,y);
+
+  ctx.fill();
+}
+
+let started=false;
+
+// ✨ ANIMATION
+function animate(time){
+  if(!started) return;
+
+  drawBackground();
+  drawTrunk();
+  drawBranches();
+
+  hearts.forEach(h=>{
+    let float=Math.sin(time*0.002+h.phase)*2;
+
+    let dx=h.x-mouse.x;
+    let dy=h.y-mouse.y;
+    let dist=Math.sqrt(dx*dx+dy*dy);
+
+    let push=dist<120?(120-dist)/6:0;
+
+    let x=h.x+(dx/dist)*push||h.x;
+    let y=h.y+float+(dy/dist)*push||h.y;
+
+    drawHeart(x,y,h.size,h.color);
+  });
+
+  requestAnimationFrame(animate);
+}
+
+// 💌 TEXT
+const messages=[
+  "Hey you 💕",
+  "Happy Birthday 🎂",
+  "You make everything brighter ✨",
+  "Every moment with you matters 💖",
+  "This little world is for you 🌸"
+];
+
+function showMessages(){
+  const box=document.getElementById("messageBox");
+
+  messages.forEach((msg,i)=>{
+    setTimeout(()=>{
+      const div=document.createElement("div");
+      div.className="message";
+      div.textContent=msg;
+      box.appendChild(div);
+
+      setTimeout(()=>{
+        div.style.opacity=1;
+        div.style.transform="translateY(0)";
+      },100);
+
+    }, i*2500);
+  });
+}
+
+// 🎬 TRANSITION
+document.getElementById("intro").onclick=()=>{
+  const intro=document.getElementById("intro");
+
+  intro.style.opacity=0;
+
+  setTimeout(()=>{
+    intro.style.display="none";
+    started=true;
+    animate(0);
+    showMessages();
+  },1200);
+};
+</script>
+
+</body>
+</html>
