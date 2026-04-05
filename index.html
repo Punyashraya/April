@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Happy Birthday ❤️</title>
+<title>For You ❤️</title>
 
 <style>
 body {
@@ -10,39 +10,32 @@ body {
   background: black;
   overflow: hidden;
   font-family: Arial, sans-serif;
+  color: white;
 }
 
 canvas {
   display: block;
 }
 
-/* Text styling */
-.message {
+/* Message area (right side) */
+.message-box {
   position: absolute;
+  right: 5%;
   top: 40%;
-  left: 8%;
-  color: white;
-}
-
-.message h1 {
-  font-size: 24px;
-  margin: 0;
-}
-
-.message p {
-  font-size: 18px;
+  width: 250px;
+  font-size: 20px;
+  line-height: 1.5;
+  opacity: 0;
+  transition: opacity 1s ease;
 }
 </style>
 </head>
 
 <body>
 
-<div class="message">
-  <h1>Hey you 💕</h1>
-  <p>Happy Birthday</p>
-</div>
-
 <canvas id="canvas"></canvas>
+
+<div class="message-box" id="messageBox"></div>
 
 <script>
 const canvas = document.getElementById("canvas");
@@ -51,9 +44,9 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let particles = [];
+let hearts = [];
 
-// Heart shape function
+// ❤️ Heart shape math
 function heartShape(t) {
   return {
     x: 16 * Math.pow(Math.sin(t), 3),
@@ -62,42 +55,81 @@ function heartShape(t) {
   };
 }
 
-// Create particles
-for (let i = 0; i < 1500; i++) {
+// 🌈 Create heart leaves
+for (let i = 0; i < 800; i++) {
   let t = Math.random() * Math.PI * 2;
   let pos = heartShape(t);
 
-  particles.push({
-    x: canvas.width * 0.7 + pos.x * 10,
-    y: canvas.height * 0.4 + pos.y * 10,
-    size: Math.random() * 4 + 1,
+  hearts.push({
+    baseX: canvas.width * 0.35 + pos.x * 10,
+    baseY: canvas.height * 0.45 + pos.y * 10,
+    offset: Math.random() * 20,
+    size: Math.random() * 8 + 4,
     color: `hsl(${Math.random()*360},100%,70%)`
   });
 }
 
-// Draw trunk
-function drawTreeTrunk() {
+// 🌳 Tree trunk
+function drawTrunk() {
   ctx.fillStyle = "#f8c8dc";
-  ctx.fillRect(canvas.width * 0.69, canvas.height * 0.45, 20, 200);
+  ctx.fillRect(canvas.width * 0.34, canvas.height * 0.5, 20, 200);
 }
 
-// Draw particles
-function draw() {
+// 💖 Draw heart shape
+function drawHeart(x, y, size, color) {
+  ctx.beginPath();
+  ctx.fillStyle = color;
+
+  ctx.moveTo(x, y);
+  ctx.bezierCurveTo(x, y - size, x - size, y - size, x - size, y);
+  ctx.bezierCurveTo(x - size, y + size, x, y + size * 1.5, x, y + size * 2);
+  ctx.bezierCurveTo(x, y + size * 1.5, x + size, y + size, x + size, y);
+  ctx.bezierCurveTo(x + size, y - size, x, y - size, x, y);
+
+  ctx.fill();
+}
+
+// ✨ Animation loop
+function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawTreeTrunk();
+  drawTrunk();
 
-  particles.forEach(p => {
-    ctx.beginPath();
-    ctx.fillStyle = p.color;
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
+  hearts.forEach(h => {
+    let float = Math.sin(time * 0.002 + h.offset) * 5;
+    drawHeart(h.baseX, h.baseY + float, h.size, h.color);
   });
 
-  requestAnimationFrame(draw);
+  requestAnimationFrame(animate);
 }
 
-draw();
+animate();
+
+// 💬 Cute messages rotation
+const messages = [
+  "Hey you 💕",
+  "Happy Birthday 🎂",
+  "You make life brighter ✨",
+  "Stay amazing always 💖",
+  "This little tree is for you 🌸"
+];
+
+let index = 0;
+const box = document.getElementById("messageBox");
+
+function showMessage() {
+  box.style.opacity = 0;
+
+  setTimeout(() => {
+    box.textContent = messages[index];
+    box.style.opacity = 1;
+    index = (index + 1) % messages.length;
+  }, 500);
+}
+
+setInterval(showMessage, 3000);
+showMessage();
+
 </script>
 
 </body>
