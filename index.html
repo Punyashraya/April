@@ -9,17 +9,14 @@ body {
   margin: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
-  color: white;
 
-  /* 🌅 fallback sunset gradient */
-  background: linear-gradient(to top, #1a1a2e, #3a0ca3, #ff758f);
+  /* 🌅 ALWAYS visible background */
+  background: linear-gradient(to top, #1a1a2e 0%, #3a0ca3 40%, #ff758f 100%);
 }
 
-/* 🎥 background video */
+/* 🎥 video (optional enhancement) */
 #bgVideo {
   position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -32,7 +29,7 @@ body {
   position: fixed;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0,0,0,0.25);
   z-index: -1;
 }
 
@@ -49,6 +46,7 @@ canvas {
   top: 25%;
   width: 320px;
   font-size: 22px;
+  color: white;
 }
 
 .message {
@@ -62,15 +60,12 @@ canvas {
 
 <body>
 
-<!-- 🎥 video -->
 <video id="bgVideo" autoplay loop muted playsinline>
   <source src="sunset_picnic.mp4" type="video/mp4">
 </video>
 
 <div id="overlay"></div>
-
 <canvas id="canvas"></canvas>
-
 <div class="message-box" id="messageBox"></div>
 
 <script>
@@ -78,97 +73,96 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const video = document.getElementById("bgVideo");
 
-// 🎥 show video if it loads
+// 🎥 show video if available
 video.addEventListener("canplay", () => {
   video.style.opacity = 1;
 });
 
-function resizeCanvas(){
+// resize
+function resize(){
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+resize();
+window.addEventListener("resize", resize);
 
-// 🌳 setup
+// 🌳 original-style heart cloud
 const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
 let hearts = [];
+let branches = [];
 
-function centerX(){ return canvas.width/2; }
-function centerY(){ return canvas.height*0.42; }
-
-// 🌸 generate clean heart shape
 function generateTree(){
   hearts = [];
+  branches = [];
 
-  for(let t=0; t<Math.PI*2; t+=0.025){
-    for(let r=0.3; r<=1; r+=0.18){
+  for (let i = 0; i < 1800; i++) {
+    let t = Math.random() * Math.PI * 2;
+    let r = Math.random();
 
-      let x = 16*Math.pow(Math.sin(t),3);
-      let y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+    let x = 16*Math.pow(Math.sin(t),3);
+    let y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
 
-      hearts.push({
-        baseX: centerX() + x*12*r,
-        baseY: centerY() + y*12*r,
-        size: 5 + Math.random()*3,
-        color: colors[Math.floor(Math.random()*colors.length)],
-        phase: Math.random()*Math.PI*2
-      });
-    }
+    let hx = canvas.width*0.5 + x*18*r;
+    let hy = canvas.height*0.42 + y*18*r;
+
+    hearts.push({
+      x: hx,
+      y: hy,
+      size: Math.random()*3 + 5,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      phase: Math.random()*1000
+    });
+
+    // 🌿 create STATIC branch once
+    let trunkTop = {
+      x: canvas.width*0.5,
+      y: canvas.height*0.55
+    };
+
+    branches.push({
+      startX: trunkTop.x,
+      startY: trunkTop.y,
+      endX: hx,
+      endY: hy,
+      midX: (trunkTop.x + hx)/2 + (Math.random()*40-20),
+      midY: (trunkTop.y + hy)/2
+    });
   }
 }
 generateTree();
 
-// 🖱️ mouse
+// 🖱️ mouse interaction
 let mouse = {x:0,y:0};
 window.addEventListener("mousemove", e=>{
   mouse.x = e.clientX;
   mouse.y = e.clientY;
 });
 
-// 💥 click hearts
-canvas.addEventListener("click", e=>{
-  for(let i=0;i<20;i++){
-    hearts.push({
-      baseX:e.clientX,
-      baseY:e.clientY,
-      size:5,
-      color:colors[Math.floor(Math.random()*colors.length)],
-      phase:Math.random()*Math.PI*2
-    });
-  }
-});
-
-// 🌳 trunk
+// 🌳 aesthetic trunk
 function drawTrunk(){
-  let x=centerX();
-  let y=canvas.height*0.75;
+  let x = canvas.width*0.5;
+  let y = canvas.height*0.75;
 
-  ctx.fillStyle="#5a3825";
   ctx.beginPath();
-  ctx.moveTo(x-12,y);
-  ctx.lineTo(x-4,y-150);
-  ctx.lineTo(x+4,y-150);
-  ctx.lineTo(x+12,y);
-  ctx.fill();
+  ctx.moveTo(x-8, y);
+  ctx.quadraticCurveTo(x-15, y-100, x-5, y-160);
+  ctx.lineTo(x+5, y-160);
+  ctx.quadraticCurveTo(x+15, y-100, x+8, y);
+  ctx.closePath();
 
-  return {x:x, y:y-150}; // top of trunk
+  ctx.fillStyle = "#5a3825";
+  ctx.fill();
 }
 
-// 🌿 draw branches
-function drawBranches(trunkTop){
-  ctx.strokeStyle="rgba(0,0,0,0.4)";
-  ctx.lineWidth=0.5;
+// 🌿 STATIC branches
+function drawBranches(){
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
+  ctx.lineWidth = 0.6;
 
-  hearts.forEach(h=>{
+  branches.forEach(b=>{
     ctx.beginPath();
-    ctx.moveTo(trunkTop.x, trunkTop.y);
-
-    // slight curve for natural look
-    let midX = (trunkTop.x + h.baseX)/2 + (Math.random()*20-10);
-    let midY = (trunkTop.y + h.baseY)/2;
-
-    ctx.quadraticCurveTo(midX, midY, h.baseX, h.baseY);
+    ctx.moveTo(b.startX, b.startY);
+    ctx.quadraticCurveTo(b.midX, b.midY, b.endX, b.endY);
     ctx.stroke();
   });
 }
@@ -191,21 +185,20 @@ function drawHeart(x,y,size,color){
 function animate(time){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  let trunkTop = drawTrunk();
-
-  drawBranches(trunkTop);
+  drawTrunk();
+  drawBranches();
 
   hearts.forEach(h=>{
     let float = Math.sin(time*0.002 + h.phase)*2;
 
-    let dx = h.baseX - mouse.x;
-    let dy = h.baseY - mouse.y;
+    let dx = h.x - mouse.x;
+    let dy = h.y - mouse.y;
     let dist = Math.sqrt(dx*dx + dy*dy);
 
     let push = dist<100 ? (100-dist)/5 : 0;
 
-    let x = h.baseX + (dx/dist)*push || h.baseX;
-    let y = h.baseY + float + (dy/dist)*push || h.baseY;
+    let x = h.x + (dx/dist)*push || h.x;
+    let y = h.y + float + (dy/dist)*push || h.y;
 
     drawHeart(x,y,h.size,h.color);
   });
@@ -250,7 +243,6 @@ setTimeout(()=>{
   final.style.transition="2s";
 
   box.appendChild(final);
-
   setTimeout(()=>final.style.opacity=1,200);
 
 },15000);
