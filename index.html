@@ -9,40 +9,26 @@ body {
   margin: 0;
   overflow: hidden;
   background: #050505;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: sans-serif;
 }
 
 /* 🌑 INTRO */
 #intro {
   position: fixed;
-  width: 100%;
-  height: 100%;
-  background: #050505;
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+  background: black;
+  z-index: 9999;
   cursor: pointer;
 }
 
 /* 💓 HEART */
 .heart {
   width: 140px;
-  height: 140px;
+  pointer-events: none; /* 🔥 important */
   animation: pulse 1.5s infinite;
-}
-
-/* clean glow (no square artifact) */
-.heart path {
-  fill: #4a0f2a;
-  stroke: #ff2e88;
-  stroke-width: 2.5;
-}
-
-.heart {
-  filter:
-    drop-shadow(0 0 8px #ff2e88)
-    drop-shadow(0 0 16px #ff2e88);
 }
 
 @keyframes pulse {
@@ -50,30 +36,17 @@ body {
   50% { transform: scale(1.15); }
 }
 
-/* ⚠️ CRITICAL FIX */
+.heart path {
+  fill: #4a0f2a;
+  stroke: #ff2e88;
+  stroke-width: 2.5;
+}
+
+/* 🔥 CRITICAL */
 canvas {
   position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none; /* 👈 THIS FIXES CLICK */
-}
-
-/* 💌 TEXT */
-.message-box {
-  position: absolute;
-  right: 6%;
-  top: 30%;
-  width: 260px;
-  color: white;
-  font-size: 18px;
-  line-height: 1.7;
-}
-
-.message {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 1.5s ease;
-  margin-bottom: 12px;
+  inset: 0;
+  pointer-events: none;
 }
 </style>
 </head>
@@ -91,73 +64,35 @@ canvas {
 </div>
 
 <canvas id="canvas"></canvas>
-<div class="message-box" id="messageBox"></div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const intro = document.getElementById("intro");
 
-const staticCanvas = document.createElement("canvas");
-const staticCtx = staticCanvas.getContext("2d");
+/* 💓 CLICK (THIS WILL WORK 100%) */
+intro.onclick = () => {
+  console.log("CLICKED ✅");
 
-function resize(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  staticCanvas.width = canvas.width;
-  staticCanvas.height = canvas.height;
+  intro.style.display = "none";
 
-  generateTree();
-  drawStaticTree();
-}
-resize();
-window.addEventListener("resize", resize);
+  startApp();
+};
 
-const centerX = () => canvas.width/2;
-const centerY = () => canvas.height*0.45;
+/* 🌳 MAIN APP */
+function startApp(){
 
-// 🌌 background
-function drawBackground(){
-  let g = ctx.createRadialGradient(centerX(), centerY(), 50, centerX(), centerY(), 600);
-  g.addColorStop(0,"#111");
-  g.addColorStop(1,"#050505");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-}
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
 
-// 🌠 particles
-let particles=[];
-for(let i=0;i<60;i++){
-  particles.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    size:Math.random()*2+1,
-    speed:Math.random()*0.3+0.2
-  });
-}
+  const hearts=[];
 
-function drawParticles(){
-  particles.forEach(p=>{
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-    ctx.fillStyle="rgba(255,180,120,0.3)";
-    ctx.fill();
-
-    p.y -= p.speed;
-    if(p.y<0){
-      p.y=canvas.height;
-      p.x=Math.random()*canvas.width;
-    }
-  });
-}
-
-// 🌳 tree
-let hearts=[];
-
-function generateTree(){
-  hearts=[];
-
-  for(let i=0;i<1200;i++){
+  for(let i=0;i<800;i++){
     let t=Math.random()*Math.PI*2;
     let r=Math.random();
 
@@ -165,89 +100,36 @@ function generateTree(){
     let y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
 
     hearts.push({
-      x:centerX()+x*18*r,
-      y:centerY()+y*18*r,
-      size:Math.random()*3+5,
-      color:["#ff4d6d","#ff758f","#ff8fa3"][Math.floor(Math.random()*3)],
-      phase:Math.random()*1000
+      x:canvas.width/2+x*15*r,
+      y:canvas.height/2+y*15*r,
+      size:Math.random()*3+4
     });
   }
+
+  function drawHeart(x,y,s){
+    ctx.beginPath();
+    ctx.moveTo(x,y);
+    ctx.bezierCurveTo(x,y-s,x-s,y-s,x-s,y);
+    ctx.bezierCurveTo(x-s,y+s,x,y+s*1.6,x,y+s*2);
+    ctx.bezierCurveTo(x,y+s*1.6,x+s,y+s,x+s,y);
+    ctx.bezierCurveTo(x+s,y-s,x,y-s,x,y);
+    ctx.fillStyle="#ff4d6d";
+    ctx.fill();
+  }
+
+  function animate(){
+    ctx.fillStyle="#050505";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    hearts.forEach(h=>{
+      drawHeart(h.x,h.y,h.size);
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
 }
-
-function drawStaticTree(){
-  staticCtx.clearRect(0,0,canvas.width,canvas.height);
-
-  let x=centerX();
-  let y=canvas.height*0.75;
-
-  staticCtx.beginPath();
-  staticCtx.moveTo(x-30,y);
-  staticCtx.bezierCurveTo(x-60,y-120,x-20,y-230,x-10,y-270);
-  staticCtx.lineTo(x+10,y-270);
-  staticCtx.bezierCurveTo(x+20,y-230,x+60,y-120,x+30,y);
-  staticCtx.fillStyle="#6b3e26";
-  staticCtx.fill();
-}
-
-// ❤️ heart
-function drawHeart(x,y,size,color){
-  ctx.beginPath();
-  ctx.fillStyle=color;
-
-  ctx.moveTo(x,y);
-  ctx.bezierCurveTo(x,y-size,x-size,y-size,x-size,y);
-  ctx.bezierCurveTo(x-size,y+size,x,y+size*1.6,x,y+size*2);
-  ctx.bezierCurveTo(x,y+size*1.6,x+size,y+size,x+size,y);
-  ctx.bezierCurveTo(x+size,y-size,x,y-size,x,y);
-
-  ctx.fill();
-}
-
-let started=false;
-
-// ✨ animate
-function animate(time){
-  if(!started) return;
-
-  drawBackground();
-  drawParticles();
-
-  hearts.forEach(h=>{
-    let float=Math.sin(time*0.002+h.phase)*2;
-    drawHeart(h.x,h.y+float,h.size,h.color);
-  });
-
-  requestAnimationFrame(animate);
-}
-
-// 💌 text
-function showMessages(){
-  const msgs=["Hey you 💕","Happy Birthday 🎂","You make everything brighter ✨"];
-  const box=document.getElementById("messageBox");
-
-  msgs.forEach((m,i)=>{
-    setTimeout(()=>{
-      let d=document.createElement("div");
-      d.className="message";
-      d.textContent=m;
-      box.appendChild(d);
-
-      setTimeout(()=>{
-        d.style.opacity=1;
-        d.style.transform="translateY(0)";
-      },100);
-    },i*2000);
-  });
-}
-
-// 💓 CLICK (WORKING)
-document.getElementById("intro").addEventListener("click",()=>{
-  document.getElementById("intro").style.display="none";
-
-  started=true;
-  requestAnimationFrame(animate);
-  showMessages();
-});
 </script>
 
 </body>
