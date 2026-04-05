@@ -186,13 +186,22 @@ function drawTrunk(){
 
 // 🌿 BRANCHES
 function drawBranches(){
-  ctx.strokeStyle="rgba(90,50,20,0.18)";
-  ctx.lineWidth=0.6;
+  ctx.lineWidth = 0.8;
 
   branches.forEach(b=>{
     ctx.beginPath();
     ctx.moveTo(b.sx,b.sy);
     ctx.bezierCurveTo(b.c1x,b.c1y,b.c2x,b.c2y,b.ex,b.ey);
+
+    // 🌟 glow layer
+    ctx.strokeStyle = "rgba(255,170,90,0.15)";
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "rgba(255,170,90,0.4)";
+    ctx.stroke();
+
+    // 🌿 core branch line
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(120,70,30,0.5)";
     ctx.stroke();
   });
 }
