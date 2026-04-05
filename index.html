@@ -20,9 +20,9 @@ canvas {
 /* 💬 Messages */
 .message-box {
   position: absolute;
-  right: 5%;
-  top: 25%;
-  width: 300px;
+  right: 6%;
+  top: 30%;
+  width: 280px;
   font-size: 20px;
   line-height: 1.6;
 }
@@ -51,42 +51,43 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// 🍁 Autumn/Spring palette
+let hearts = [];
+
+// 🍁 Soft aesthetic palette
 const colors = [
-  "#ff4d6d", "#ff758f", "#ff8fa3",
-  "#ffb347", "#ffd166", "#f77f00",
-  "#e63946", "#f4a261"
+  "#ff8fa3", "#ff758f", "#ffb3c1",
+  "#ffd166", "#f4a261", "#ff6b6b"
 ];
 
-// 🌳 Draw trunk + branches (recursive)
-function drawBranch(x, y, length, angle, depth) {
-  if (depth === 0) return;
+// ❤️ Heart shape formula
+function heartShape(t) {
+  return {
+    x: 16 * Math.pow(Math.sin(t), 3),
+    y: -(13 * Math.cos(t) - 5 * Math.cos(2*t)
+        - 2 * Math.cos(3*t) - Math.cos(4*t))
+  };
+}
 
-  const x2 = x + length * Math.cos(angle);
-  const y2 = y - length * Math.sin(angle);
+// 💖 CREATE DENSE TREE (MAIN FOCUS)
+for (let i = 0; i < 3500; i++) {
+  let t = Math.random() * Math.PI * 2;
+  let r = Math.random();
 
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = "#d8a48f";
-  ctx.lineWidth = depth * 2;
-  ctx.stroke();
+  let pos = heartShape(t);
 
-  // Add leaves near branch tips
-  if (depth < 4) {
-    for (let i = 0; i < 15; i++) {
-      drawHeart(
-        x2 + Math.random() * 20 - 10,
-        y2 + Math.random() * 20 - 10,
-        Math.random() * 5 + 3,
-        colors[Math.floor(Math.random() * colors.length)]
-      );
-    }
-  }
+  hearts.push({
+    x: canvas.width * 0.35 + pos.x * 18 * r,
+    y: canvas.height * 0.45 + pos.y * 18 * r,
+    size: Math.random() * 5 + 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    offset: Math.random() * 1000
+  });
+}
 
-  // Split branches
-  drawBranch(x2, y2, length * 0.7, angle - 0.5, depth - 1);
-  drawBranch(x2, y2, length * 0.7, angle + 0.5, depth - 1);
+// 🌳 Subtle trunk (thin & soft)
+function drawTrunk() {
+  ctx.fillStyle = "#e5a5a5";
+  ctx.fillRect(canvas.width * 0.345, canvas.height * 0.55, 18, 220);
 }
 
 // 💖 Draw heart leaf
@@ -103,19 +104,16 @@ function drawHeart(x, y, size, color) {
   ctx.fill();
 }
 
-// ✨ Animate tree sway
+// ✨ Smooth animation (VERY subtle)
 function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  let sway = Math.sin(time * 0.001) * 0.1;
+  drawTrunk();
 
-  drawBranch(
-    canvas.width * 0.35,
-    canvas.height * 0.8,
-    120,
-    Math.PI / 2 + sway,
-    7
-  );
+  hearts.forEach(h => {
+    let float = Math.sin(time * 0.001 + h.offset) * 1.5; // 🔥 slower + softer
+    drawHeart(h.x, h.y + float, h.size, h.color);
+  });
 
   requestAnimationFrame(animate);
 }
@@ -126,9 +124,9 @@ animate();
 const messages = [
   "Hey you 💕",
   "Happy Birthday 🎂",
-  "You make the world brighter ✨",
-  "Stay as lovely as you are 💖",
-  "This tree blooms just for you 🌸"
+  "You make everything better ✨",
+  "Stay amazing always 💖",
+  "This is just for you 🌸"
 ];
 
 const box = document.getElementById("messageBox");
@@ -145,7 +143,7 @@ function addMessage() {
   index++;
 }
 
-setInterval(addMessage, 2000);
+setInterval(addMessage, 2500);
 </script>
 
 </body>
