@@ -26,7 +26,7 @@ body {
   transition: opacity 1.5s ease;
 }
 
-/* 💓 HEART (NO SQUARE GLOW) */
+/* 💓 HEART */
 .heart {
   width: 100px;
   height: 100px;
@@ -39,7 +39,6 @@ body {
   stroke-width: 2.5;
 }
 
-/* layered glow (cleaner than drop-shadow) */
 .heart {
   filter:
     drop-shadow(0 0 4px #ff2e88)
@@ -93,9 +92,19 @@ body {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+// ⚡ STATIC CANVAS (performance boost)
+const staticCanvas = document.createElement("canvas");
+const staticCtx = staticCanvas.getContext("2d");
+
 function resize(){
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+
+  staticCanvas.width = canvas.width;
+  staticCanvas.height = canvas.height;
+
+  generateTree();
+  drawStaticTree();
 }
 resize();
 window.addEventListener("resize", resize);
@@ -116,7 +125,7 @@ function drawBackground(){
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// 💖 TREE
+// 💖 TREE DATA
 const colors = ["#ff4d6d","#ff758f","#ff8fa3"];
 let hearts=[];
 let branches=[];
@@ -130,7 +139,7 @@ function generateTree(){
     y:canvas.height*0.5
   };
 
-  for(let i=0;i<2200;i++){
+  for(let i=0;i<1400;i++){ // reduced for performance
     let t=Math.random()*Math.PI*2;
     let r=Math.random();
 
@@ -148,7 +157,6 @@ function generateTree(){
       phase:Math.random()*1000
     });
 
-    // 🌿 curved branch (STATIC)
     branches.push({
       sx: trunkTop.x,
       sy: trunkTop.y,
@@ -161,7 +169,43 @@ function generateTree(){
     });
   }
 }
-generateTree();
+
+// 🌳 STATIC TREE (draw once)
+function drawStaticTree(){
+  staticCtx.clearRect(0,0,canvas.width,canvas.height);
+
+  let x=centerX();
+  let y=canvas.height*0.75;
+
+  // trunk
+  staticCtx.beginPath();
+  staticCtx.moveTo(x-25,y);
+  staticCtx.bezierCurveTo(x-40,y-100, x-15,y-200, x-10,y-250);
+  staticCtx.lineTo(x+10,y-250);
+  staticCtx.bezierCurveTo(x+15,y-200, x+40,y-100, x+25,y);
+  staticCtx.fillStyle="#6b3e26";
+  staticCtx.fill();
+
+  // branches
+  staticCtx.lineWidth = 0.8;
+
+  branches.forEach(b=>{
+    staticCtx.beginPath();
+    staticCtx.moveTo(b.sx,b.sy);
+    staticCtx.bezierCurveTo(b.c1x,b.c1y,b.c2x,b.c2y,b.ex,b.ey);
+
+    // glow
+    staticCtx.strokeStyle = "rgba(255,170,90,0.15)";
+    staticCtx.shadowBlur = 8;
+    staticCtx.shadowColor = "rgba(255,170,90,0.4)";
+    staticCtx.stroke();
+
+    // core
+    staticCtx.shadowBlur = 0;
+    staticCtx.strokeStyle = "rgba(120,70,30,0.5)";
+    staticCtx.stroke();
+  });
+}
 
 // 🖱️ HOVER
 let mouse={x:0,y:0};
@@ -170,43 +214,7 @@ window.addEventListener("mousemove",e=>{
   mouse.y=e.clientY;
 });
 
-// 🌳 TRUNK
-function drawTrunk(){
-  let x=centerX();
-  let y=canvas.height*0.75;
-
-  ctx.beginPath();
-  ctx.moveTo(x-25,y);
-  ctx.bezierCurveTo(x-40,y-100, x-15,y-200, x-10,y-250);
-  ctx.lineTo(x+10,y-250);
-  ctx.bezierCurveTo(x+15,y-200, x+40,y-100, x+25,y);
-  ctx.fillStyle="#6b3e26";
-  ctx.fill();
-}
-
-// 🌿 BRANCHES
-function drawBranches(){
-  ctx.lineWidth = 0.8;
-
-  branches.forEach(b=>{
-    ctx.beginPath();
-    ctx.moveTo(b.sx,b.sy);
-    ctx.bezierCurveTo(b.c1x,b.c1y,b.c2x,b.c2y,b.ex,b.ey);
-
-    // 🌟 glow layer
-    ctx.strokeStyle = "rgba(255,170,90,0.15)";
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = "rgba(255,170,90,0.4)";
-    ctx.stroke();
-
-    // 🌿 core branch line
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(120,70,30,0.5)";
-    ctx.stroke();
-  });
-}
-
-// ❤️ HEART
+// ❤️ HEART DRAW
 function drawHeart(x,y,size,color){
   ctx.beginPath();
   ctx.fillStyle=color;
@@ -222,25 +230,30 @@ function drawHeart(x,y,size,color){
 
 let started=false;
 
-// ✨ ANIMATION
+// ✨ ANIMATION (optimized)
 function animate(time){
   if(!started) return;
 
   drawBackground();
-  drawTrunk();
-  drawBranches();
+
+  // fast static render
+  ctx.drawImage(staticCanvas,0,0);
 
   hearts.forEach(h=>{
     let float=Math.sin(time*0.002+h.phase)*2;
 
-    let dx=h.x-mouse.x;
-    let dy=h.y-mouse.y;
+    let x=h.x;
+    let y=h.y+float;
+
+    let dx=x-mouse.x;
+    let dy=y-mouse.y;
     let dist=Math.sqrt(dx*dx+dy*dy);
 
-    let push=dist<120?(120-dist)/6:0;
-
-    let x=h.x+(dx/dist)*push||h.x;
-    let y=h.y+float+(dy/dist)*push||h.y;
+    if(dist<100){
+      let force=(100-dist)*0.04;
+      x+=dx/dist*force;
+      y+=dy/dist*force;
+    }
 
     drawHeart(x,y,h.size,h.color);
   });
