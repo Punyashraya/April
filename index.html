@@ -17,7 +17,7 @@ canvas {
   display: block;
 }
 
-/* 💬 Messages stack on right */
+/* 💬 Messages */
 .message-box {
   position: absolute;
   right: 5%;
@@ -30,15 +30,11 @@ canvas {
 .message {
   opacity: 0;
   margin-bottom: 10px;
-  transform: translateY(10px);
   animation: fadeIn 1s forwards;
 }
 
 @keyframes fadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  to { opacity: 1; }
 }
 </style>
 </head>
@@ -55,40 +51,45 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let hearts = [];
+// 🍁 Autumn/Spring palette
+const colors = [
+  "#ff4d6d", "#ff758f", "#ff8fa3",
+  "#ffb347", "#ffd166", "#f77f00",
+  "#e63946", "#f4a261"
+];
 
-// ❤️ Heart equation
-function heartShape(t) {
-  return {
-    x: 16 * Math.pow(Math.sin(t), 3),
-    y: -(13 * Math.cos(t) - 5 * Math.cos(2*t)
-        - 2 * Math.cos(3*t) - Math.cos(4*t))
-  };
+// 🌳 Draw trunk + branches (recursive)
+function drawBranch(x, y, length, angle, depth) {
+  if (depth === 0) return;
+
+  const x2 = x + length * Math.cos(angle);
+  const y2 = y - length * Math.sin(angle);
+
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x2, y2);
+  ctx.strokeStyle = "#d8a48f";
+  ctx.lineWidth = depth * 2;
+  ctx.stroke();
+
+  // Add leaves near branch tips
+  if (depth < 4) {
+    for (let i = 0; i < 15; i++) {
+      drawHeart(
+        x2 + Math.random() * 20 - 10,
+        y2 + Math.random() * 20 - 10,
+        Math.random() * 5 + 3,
+        colors[Math.floor(Math.random() * colors.length)]
+      );
+    }
+  }
+
+  // Split branches
+  drawBranch(x2, y2, length * 0.7, angle - 0.5, depth - 1);
+  drawBranch(x2, y2, length * 0.7, angle + 0.5, depth - 1);
 }
 
-// 🌳 CREATE A BIG, FULL TREE
-for (let i = 0; i < 2500; i++) {  // 🔥 increased density
-  let t = Math.random() * Math.PI * 2;
-  let r = Math.random(); // fills inside
-
-  let pos = heartShape(t);
-
-  hearts.push({
-    baseX: canvas.width * 0.35 + pos.x * 15 * r, // 🔥 wider tree
-    baseY: canvas.height * 0.45 + pos.y * 15 * r,
-    offset: Math.random() * 10,
-    size: Math.random() * 6 + 3,
-    color: `hsl(${Math.random()*360}, 100%, 60%)`
-  });
-}
-
-// 🌳 Tree trunk (bigger)
-function drawTrunk() {
-  ctx.fillStyle = "#ffc0cb";
-  ctx.fillRect(canvas.width * 0.34, canvas.height * 0.5, 25, 250);
-}
-
-// 💖 Draw heart
+// 💖 Draw heart leaf
 function drawHeart(x, y, size, color) {
   ctx.beginPath();
   ctx.fillStyle = color;
@@ -102,30 +103,32 @@ function drawHeart(x, y, size, color) {
   ctx.fill();
 }
 
-// ✨ Animate
+// ✨ Animate tree sway
 function animate(time) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  drawTrunk();
+  let sway = Math.sin(time * 0.001) * 0.1;
 
-  hearts.forEach(h => {
-    let float = Math.sin(time * 0.002 + h.offset) * 3;
-    drawHeart(h.baseX, h.baseY + float, h.size, h.color);
-  });
+  drawBranch(
+    canvas.width * 0.35,
+    canvas.height * 0.8,
+    120,
+    Math.PI / 2 + sway,
+    7
+  );
 
   requestAnimationFrame(animate);
 }
 
 animate();
 
-// 💬 STACKING MESSAGES
+// 💬 Messages stacking
 const messages = [
   "Hey you 💕",
   "Happy Birthday 🎂",
-  "You make everything better ✨",
-  "I hope you smile today 😊",
-  "You are truly special 💖",
-  "This tree is just for you 🌸"
+  "You make the world brighter ✨",
+  "Stay as lovely as you are 💖",
+  "This tree blooms just for you 🌸"
 ];
 
 const box = document.getElementById("messageBox");
@@ -143,7 +146,6 @@ function addMessage() {
 }
 
 setInterval(addMessage, 2000);
-
 </script>
 
 </body>
