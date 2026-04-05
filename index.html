@@ -26,34 +26,31 @@ body {
   transition: opacity 1.5s ease;
 }
 
-/* 💓 Proper neon heart */
+/* 💓 SVG HEART */
 .heart {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  transform: rotate(45deg);
-  animation: pulse 1.5s infinite;
-  background: #8b1e4f;
-  box-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88;
+  width: 90px;
+  height: 90px;
+  animation: pulse 1.6s infinite;
 }
 
-.heart::before,
-.heart::after {
-  content: "";
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  background: #8b1e4f;
-  border-radius: 50%;
-  box-shadow: 0 0 20px #ff2e88, 0 0 40px #ff2e88;
+.heart path {
+  fill: #5a0f2e;
+  stroke: #ff2e88;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px #ff2e88)
+          drop-shadow(0 0 15px #ff2e88)
+          drop-shadow(0 0 30px #ff2e88);
 }
 
-.heart::before { top: -40px; left: 0; }
-.heart::after { left: -40px; top: 0; }
+.heart:hover path {
+  stroke: #ff4da6;
+  filter: drop-shadow(0 0 10px #ff4da6)
+          drop-shadow(0 0 25px #ff4da6);
+}
 
 @keyframes pulse {
-  0%,100% { transform: scale(1) rotate(45deg); }
-  50% { transform: scale(1.15) rotate(45deg); }
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
 }
 
 /* 💌 TEXT */
@@ -79,8 +76,15 @@ body {
 
 <body>
 
+<!-- 💓 INTRO -->
 <div id="intro">
-  <div class="heart" id="introHeart"></div>
+  <svg class="heart" viewBox="0 0 100 100">
+    <path d="M50 90 
+             L20 60 
+             A20 20 0 1 1 50 30 
+             A20 20 0 1 1 80 60 
+             Z"/>
+  </svg>
 </div>
 
 <canvas id="canvas"></canvas>
@@ -100,7 +104,7 @@ window.addEventListener("resize", resize);
 const centerX = () => canvas.width/2;
 const centerY = () => canvas.height*0.45;
 
-// 🌌 background (simple dark aesthetic)
+// 🌌 BACKGROUND
 function drawBackground(){
   let grad = ctx.createRadialGradient(
     centerX(), centerY(), 50,
@@ -113,7 +117,7 @@ function drawBackground(){
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// 💖 ORIGINAL STYLE TREE
+// 💖 TREE (original style)
 const colors = ["#ff4d6d","#ff758f","#ff8fa3"];
 let hearts=[];
 
@@ -137,14 +141,14 @@ function generateTree(){
 }
 generateTree();
 
-// 🖱️ hover interaction (RESTORED)
+// 🖱️ HOVER INTERACTION
 let mouse={x:0,y:0};
 window.addEventListener("mousemove",e=>{
   mouse.x=e.clientX;
   mouse.y=e.clientY;
 });
 
-// 🌳 trunk (clean)
+// 🌳 TRUNK
 function drawTrunk(){
   let x=centerX();
   let y=canvas.height*0.75;
@@ -158,7 +162,7 @@ function drawTrunk(){
   ctx.fill();
 }
 
-// ❤️ heart leaf
+// ❤️ HEART
 function drawHeart(x,y,size,color){
   ctx.beginPath();
   ctx.fillStyle=color;
@@ -174,7 +178,7 @@ function drawHeart(x,y,size,color){
 
 let started=false;
 
-// ✨ animation
+// ✨ ANIMATION
 function animate(time){
   if(!started) return;
 
@@ -199,7 +203,7 @@ function animate(time){
   requestAnimationFrame(animate);
 }
 
-// 💌 messages
+// 💌 MESSAGES
 const messages=[
   "Hey you 💕",
   "Happy Birthday 🎂",
@@ -227,7 +231,7 @@ function showMessages(){
   });
 }
 
-// 🎬 intro click (SMOOTH TRANSITION)
+// 🎬 TRANSITION
 document.getElementById("intro").onclick=()=>{
   const intro=document.getElementById("intro");
 
