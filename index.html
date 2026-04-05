@@ -23,19 +23,24 @@ body {
   align-items: center;
   z-index: 999;
   cursor: pointer;
-  transition: opacity 1.5s ease;
 }
 
-/* 💓 HEART (REAL GLOW FIX) */
 .heart {
   width: 100px;
   height: 100px;
   animation: pulse 1.6s infinite;
+  pointer-events: auto;
 }
 
 @keyframes pulse {
   0%,100% { transform: scale(1); }
   50% { transform: scale(1.12); }
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 /* 💌 TEXT */
@@ -56,27 +61,16 @@ body {
   margin-bottom: 12px;
   text-shadow: 0 0 8px rgba(255,100,150,0.3);
 }
-
-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
 </style>
 </head>
 
 <body>
 
-<!-- 💓 HEART (SVG with TRUE glow) -->
 <div id="intro">
   <svg class="heart" viewBox="0 0 100 100">
     <defs>
       <filter id="glow">
-        <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
-        <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
+        <feGaussianBlur stdDeviation="3.5"/>
       </filter>
     </defs>
 
@@ -105,7 +99,6 @@ const staticCtx = staticCanvas.getContext("2d");
 function resize(){
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-
   staticCanvas.width = canvas.width;
   staticCanvas.height = canvas.height;
 
@@ -128,7 +121,40 @@ function drawBackground(){
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// 🌳 DATA
+// 🌠 PARTICLES
+let particles=[];
+for(let i=0;i<80;i++){
+  particles.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    size:Math.random()*2+1,
+    speed:Math.random()*0.5+0.2,
+    phase:Math.random()*1000
+  });
+}
+
+function drawParticles(time){
+  particles.forEach(p=>{
+    let float = Math.sin(time*0.001 + p.phase)*10;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y + float, p.size, 0, Math.PI*2);
+
+    ctx.fillStyle="rgba(255,180,120,0.4)";
+    ctx.shadowBlur=10;
+    ctx.shadowColor="rgba(255,180,120,0.6)";
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    p.y -= p.speed;
+    if(p.y < 0){
+      p.y = canvas.height;
+      p.x = Math.random()*canvas.width;
+    }
+  });
+}
+
+// 🌳 TREE
 const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
 let hearts=[];
 let branches=[];
@@ -177,7 +203,6 @@ function drawStaticTree(){
   let x=centerX();
   let y=canvas.height*0.75;
 
-  // trunk
   staticCtx.beginPath();
   staticCtx.moveTo(x-30,y);
   staticCtx.bezierCurveTo(x-60,y-120,x-20,y-230,x-10,y-270);
@@ -186,7 +211,6 @@ function drawStaticTree(){
   staticCtx.fillStyle="#6b3e26";
   staticCtx.fill();
 
-  // branches
   staticCtx.lineWidth=0.8;
 
   branches.forEach(b=>{
@@ -233,6 +257,7 @@ function animate(time){
   if(!started) return;
 
   drawBackground();
+  drawParticles(time);
   ctx.drawImage(staticCanvas,0,0);
 
   hearts.forEach(h=>{
@@ -285,19 +310,20 @@ function showMessages(){
   });
 }
 
-// 🎬 click
-document.getElementById("intro").onclick=()=>{
+// 💓 CLICK (FIXED)
+document.getElementById("intro").addEventListener("click",()=>{
   const intro=document.getElementById("intro");
 
   intro.style.opacity=0;
 
   setTimeout(()=>{
     intro.style.display="none";
-    started=true;
-    requestAnimationFrame(animate);
-    showMessages();
-  },1200);
-};
+  },1000);
+
+  started=true;
+  requestAnimationFrame(animate);
+  showMessages();
+});
 </script>
 
 </body>
