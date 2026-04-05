@@ -22,19 +22,31 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 999;
-  cursor: pointer;
 }
 
+/* 💓 HEART (FIXED) */
 .heart {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
+  cursor: pointer;
   animation: pulse 1.6s infinite;
-  pointer-events: auto;
+}
+
+.heart path {
+  fill: #4a0f2a;
+  stroke: #ff2e88;
+  stroke-width: 2.5;
+
+  /* ✅ clean glow (NO blur bug) */
+  filter:
+    drop-shadow(0 0 6px #ff2e88)
+    drop-shadow(0 0 12px #ff2e88)
+    drop-shadow(0 0 20px #ff2e88);
 }
 
 @keyframes pulse {
   0%,100% { transform: scale(1); }
-  50% { transform: scale(1.12); }
+  50% { transform: scale(1.15); }
 }
 
 canvas {
@@ -67,22 +79,13 @@ canvas {
 <body>
 
 <div id="intro">
-  <svg class="heart" viewBox="0 0 100 100">
-    <defs>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="3.5"/>
-      </filter>
-    </defs>
-
+  <!-- 💓 CLICK ATTACHED DIRECTLY HERE -->
+  <svg class="heart" id="heartBtn" viewBox="0 0 100 100">
     <path d="M50 90 
              L20 60 
              A20 20 0 1 1 50 30 
              A20 20 0 1 1 80 60 
-             Z"
-          fill="#4a0f2a"
-          stroke="#ff2e88"
-          stroke-width="2.5"
-          filter="url(#glow)"/>
+             Z"/>
   </svg>
 </div>
 
@@ -121,7 +124,7 @@ function drawBackground(){
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// 🌠 PARTICLES
+// 🌠 particles
 let particles=[];
 for(let i=0;i<80;i++){
   particles.push({
@@ -154,7 +157,7 @@ function drawParticles(time){
   });
 }
 
-// 🌳 TREE
+// 🌳 tree
 const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
 let hearts=[];
 let branches=[];
@@ -165,7 +168,7 @@ function generateTree(){
 
   let trunkTop={x:centerX(),y:canvas.height*0.5};
 
-  for(let i=0;i<1500;i++){
+  for(let i=0;i<1400;i++){
     let t=Math.random()*Math.PI*2;
     let r=Math.random();
 
@@ -186,9 +189,9 @@ function generateTree(){
     branches.push({
       sx:trunkTop.x,
       sy:trunkTop.y,
-      c1x: trunkTop.x + (hx-trunkTop.x)*0.3 + (Math.random()*40-20),
+      c1x: trunkTop.x + (hx-trunkTop.x)*0.3,
       c1y: trunkTop.y + (hy-trunkTop.y)*0.3,
-      c2x: trunkTop.x + (hx-trunkTop.x)*0.7 + (Math.random()*40-20),
+      c2x: trunkTop.x + (hx-trunkTop.x)*0.7,
       c2y: trunkTop.y + (hy-trunkTop.y)*0.7,
       ex:hx,
       ey:hy
@@ -196,7 +199,7 @@ function generateTree(){
   }
 }
 
-// 🌳 STATIC TREE
+// 🌳 static tree
 function drawStaticTree(){
   staticCtx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -218,13 +221,7 @@ function drawStaticTree(){
     staticCtx.moveTo(b.sx,b.sy);
     staticCtx.bezierCurveTo(b.c1x,b.c1y,b.c2x,b.c2y,b.ex,b.ey);
 
-    staticCtx.strokeStyle="rgba(255,170,90,0.18)";
-    staticCtx.shadowBlur=8;
-    staticCtx.shadowColor="rgba(255,170,90,0.5)";
-    staticCtx.stroke();
-
-    staticCtx.shadowBlur=0;
-    staticCtx.strokeStyle="rgba(120,70,30,0.5)";
+    staticCtx.strokeStyle="rgba(150,90,40,0.6)";
     staticCtx.stroke();
   });
 }
@@ -236,7 +233,7 @@ window.addEventListener("mousemove",e=>{
   mouse.y=e.clientY;
 });
 
-// ❤️ draw heart
+// ❤️ heart draw
 function drawHeart(x,y,size,color){
   ctx.beginPath();
   ctx.fillStyle=color;
@@ -283,15 +280,15 @@ function animate(time){
 }
 
 // 💌 messages
-const messages=[
-  "Hey you 💕",
-  "Happy Birthday 🎂",
-  "You make everything brighter ✨",
-  "Every moment with you matters 💖",
-  "This little world is for you 🌸"
-];
-
 function showMessages(){
+  const messages=[
+    "Hey you 💕",
+    "Happy Birthday 🎂",
+    "You make everything brighter ✨",
+    "Every moment with you matters 💖",
+    "This little world is for you 🌸"
+  ];
+
   const box=document.getElementById("messageBox");
 
   messages.forEach((msg,i)=>{
@@ -310,17 +307,17 @@ function showMessages(){
   });
 }
 
-// 💓 CLICK (FIXED)
-document.getElementById("intro").addEventListener("click",()=>{
-  const intro=document.getElementById("intro");
+// 💓 CLICK (FINAL FIX)
+document.getElementById("heartBtn").addEventListener("click", () => {
+  const intro = document.getElementById("intro");
 
-  intro.style.opacity=0;
+  intro.style.opacity = 0;
 
   setTimeout(()=>{
-    intro.style.display="none";
+    intro.style.display = "none";
   },1000);
 
-  started=true;
+  started = true;
   requestAnimationFrame(animate);
   showMessages();
 });
