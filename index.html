@@ -8,35 +8,88 @@
 body {
   margin: 0;
   overflow: hidden;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
+  background: black;
 }
 
-canvas {
+/* 🌑 Intro screen */
+#intro {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, #000000, #050505);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* 💓 Pulsating heart */
+.heart {
+  width: 60px;
+  height: 60px;
+  background: #ff4d6d;
+  transform: rotate(45deg);
+  animation: pulse 1.5s infinite;
+  position: relative;
+}
+
+.heart::before,
+.heart::after {
+  content: "";
+  width: 60px;
+  height: 60px;
+  background: #ff4d6d;
+  border-radius: 50%;
   position: absolute;
-  top: 0;
-  left: 0;
 }
 
-/* 💌 messages */
+.heart::before { top: -30px; left: 0; }
+.heart::after { left: -30px; top: 0; }
+
+@keyframes pulse {
+  0%,100% { transform: scale(1) rotate(45deg); }
+  50% { transform: scale(1.2) rotate(45deg); }
+}
+
+#introText {
+  margin-top: 20px;
+  color: rgba(255,255,255,0.6);
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+/* 🌸 Messages */
 .message-box {
   position: absolute;
-  right: 5%;
-  top: 25%;
+  right: 6%;
+  top: 30%;
   width: 320px;
-  font-size: 22px;
   color: white;
+  font-size: 24px;
+  line-height: 1.8;
+  font-weight: 300;
 }
 
 .message {
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 1s ease;
-  margin-bottom: 12px;
+  transform: translateY(30px);
+  filter: blur(10px);
+  transition: all 1.5s ease;
+  margin-bottom: 16px;
 }
 </style>
 </head>
 
 <body>
+
+<!-- 🌑 INTRO -->
+<div id="intro">
+  <div class="heart"></div>
+  <div id="introText">tap gently 💕</div>
+</div>
 
 <canvas id="canvas"></canvas>
 <div class="message-box" id="messageBox"></div>
@@ -55,127 +108,67 @@ window.addEventListener("resize", resize);
 const centerX = () => canvas.width/2;
 const centerY = () => canvas.height*0.42;
 
-// 🌅 BEAUTIFUL BACKGROUND
+// 🌅 BACKGROUND (soft & romantic)
 function drawBackground(){
-  // sky gradient
   let sky = ctx.createLinearGradient(0,0,0,canvas.height);
-  sky.addColorStop(0,"#ff9a9e");
-  sky.addColorStop(0.4,"#fad0c4");
+  sky.addColorStop(0,"#2b1055");
+  sky.addColorStop(0.5,"#7597de");
   sky.addColorStop(1,"#fbc2eb");
+
   ctx.fillStyle = sky;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // 🌞 sun glow
-  let sun = ctx.createRadialGradient(
-    canvas.width*0.7, canvas.height*0.3, 50,
+  // glow
+  let glow = ctx.createRadialGradient(
+    canvas.width*0.7, canvas.height*0.3, 10,
     canvas.width*0.7, canvas.height*0.3, 300
   );
-  sun.addColorStop(0,"rgba(255,220,150,0.8)");
-  sun.addColorStop(1,"rgba(255,220,150,0)");
-  ctx.fillStyle = sun;
+  glow.addColorStop(0,"rgba(255,200,200,0.4)");
+  glow.addColorStop(1,"rgba(255,200,200,0)");
+  ctx.fillStyle = glow;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // 🌿 ground hill
-  ctx.beginPath();
-  ctx.moveTo(0, canvas.height*0.75);
-  ctx.quadraticCurveTo(canvas.width*0.5, canvas.height*0.65, canvas.width, canvas.height*0.75);
-  ctx.lineTo(canvas.width, canvas.height);
-  ctx.lineTo(0, canvas.height);
-  ctx.closePath();
-
-  ctx.fillStyle = "#2d6a4f";
-  ctx.fill();
+  // ground
+  ctx.fillStyle = "#1b4332";
+  ctx.fillRect(0, canvas.height*0.75, canvas.width, canvas.height);
 }
 
-// 💖 hearts
+// 💖 tree
 const colors = ["#ff4d6d","#ff758f","#ff8fa3","#ffd166","#f4a261"];
-let hearts = [];
-let branches = [];
+let hearts=[];
 
 function generateTree(){
-  hearts = [];
-  branches = [];
+  hearts=[];
+  for(let i=0;i<2600;i++){
+    let t=Math.random()*Math.PI*2;
+    let r=Math.random();
 
-  let trunkTop = {
-    x: centerX(),
-    y: canvas.height*0.58
-  };
-
-  for (let i = 0; i < 2600; i++) {
-    let t = Math.random()*Math.PI*2;
-    let r = Math.random();
-
-    let x = 16*Math.pow(Math.sin(t),3);
-    let y = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
-
-    let hx = centerX() + x*20*r;
-    let hy = centerY() + y*20*r;
+    let x=16*Math.pow(Math.sin(t),3);
+    let y=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
 
     hearts.push({
-      x:hx,
-      y:hy,
+      x:centerX()+x*20*r,
+      y:centerY()+y*20*r,
       size:Math.random()*3+5,
       color:colors[Math.floor(Math.random()*colors.length)],
       phase:Math.random()*1000
-    });
-
-    // 🌿 CURVED natural branch
-    branches.push({
-      startX: trunkTop.x,
-      startY: trunkTop.y,
-      cp1x: trunkTop.x + (hx-trunkTop.x)*0.3 + (Math.random()*80-40),
-      cp1y: trunkTop.y + (hy-trunkTop.y)*0.3,
-      cp2x: trunkTop.x + (hx-trunkTop.x)*0.7 + (Math.random()*80-40),
-      cp2y: trunkTop.y + (hy-trunkTop.y)*0.7,
-      endX: hx,
-      endY: hy
     });
   }
 }
 generateTree();
 
-// 🖱️ interaction
-let mouse={x:0,y:0};
-window.addEventListener("mousemove",e=>{
-  mouse.x=e.clientX;
-  mouse.y=e.clientY;
-});
-
-// 🌳 BIG REALISTIC TRUNK
+// 🌳 trunk
 function drawTrunk(){
   let x=centerX();
   let y=canvas.height*0.8;
 
   ctx.beginPath();
-
   ctx.moveTo(x-35,y);
-
   ctx.bezierCurveTo(x-60,y-100, x-25,y-200, x-15,y-260);
   ctx.lineTo(x+15,y-260);
   ctx.bezierCurveTo(x+25,y-200, x+60,y-100, x+35,y);
-
-  ctx.closePath();
-
   ctx.fillStyle="#6b3e26";
   ctx.fill();
-
-  // subtle highlight
-  ctx.strokeStyle="rgba(255,255,255,0.1)";
-  ctx.lineWidth=3;
-  ctx.stroke();
-}
-
-// 🌿 curved branches
-function drawBranches(){
-  ctx.strokeStyle="rgba(90,50,20,0.2)";
-  ctx.lineWidth=0.6;
-
-  branches.forEach(b=>{
-    ctx.beginPath();
-    ctx.moveTo(b.startX,b.startY);
-    ctx.bezierCurveTo(b.cp1x,b.cp1y,b.cp2x,b.cp2y,b.endX,b.endY);
-    ctx.stroke();
-  });
 }
 
 // ❤️ heart
@@ -192,69 +185,63 @@ function drawHeart(x,y,size,color){
   ctx.fill();
 }
 
-// ✨ animation
+// 🎬 animation control
+let started = false;
+
 function animate(time){
+  if(!started) return;
+
   drawBackground();
   drawTrunk();
-  drawBranches();
 
   hearts.forEach(h=>{
     let float=Math.sin(time*0.002+h.phase)*2;
-
-    let dx=h.x-mouse.x;
-    let dy=h.y-mouse.y;
-    let dist=Math.sqrt(dx*dx+dy*dy);
-
-    let push=dist<100?(100-dist)/5:0;
-
-    let x=h.x+(dx/dist)*push||h.x;
-    let y=h.y+float+(dy/dist)*push||h.y;
-
-    drawHeart(x,y,h.size,h.color);
+    drawHeart(h.x, h.y+float, h.size, h.color);
   });
 
   requestAnimationFrame(animate);
 }
-animate(0);
 
-// 💌 messages
+// 💌 messages (aesthetic)
 const messages=[
-  "Hey you 💕",
+  "Hey you...",
   "Happy Birthday 🎂",
   "You make my world brighter ✨",
-  "Every moment with you matters 💖",
-  "This world is just for you 🌸"
+  "Every moment with you matters",
+  "This little world is for you 💖"
 ];
 
-const box=document.getElementById("messageBox");
+function showMessages(){
+  const box=document.getElementById("messageBox");
 
-messages.forEach((msg,i)=>{
-  setTimeout(()=>{
-    const div=document.createElement("div");
-    div.className="message";
-    div.textContent=msg;
-
-    box.appendChild(div);
-
+  messages.forEach((msg,i)=>{
     setTimeout(()=>{
-      div.style.opacity=1;
-      div.style.transform="translateY(0)";
-    },100);
+      const div=document.createElement("div");
+      div.className="message";
+      div.textContent=msg;
+      box.appendChild(div);
 
-  }, i*2500);
-});
+      setTimeout(()=>{
+        div.style.opacity=1;
+        div.style.transform="translateY(0)";
+        div.style.filter="blur(0)";
+      },100);
 
-setTimeout(()=>{
-  const final=document.createElement("div");
-  final.textContent="I love you ❤️";
-  final.style.fontSize="32px";
-  final.style.opacity=0;
-  final.style.transition="2s";
+    }, i*2500);
+  });
+}
 
-  box.appendChild(final);
-  setTimeout(()=>final.style.opacity=1,200);
+// 🌑 intro click
+document.getElementById("intro").onclick = ()=>{
+  document.getElementById("intro").style.opacity=0;
 
-},15000);
+  setTimeout(()=>{
+    document.getElementById("intro").style.display="none";
+    started = true;
+    animate(0);
+    showMessages();
+  },1000);
+};
 
 </script>
 
