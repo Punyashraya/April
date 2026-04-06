@@ -2,20 +2,36 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Magical Tree ✨</title>
+<title>For You ❤️</title>
 
 <style>
-body {margin:0;overflow:hidden;background:#020204;font-family:'Segoe UI';}
-
-#intro {
- position:fixed; inset:0;
- display:flex; justify-content:center; align-items:center;
- background:black; cursor:pointer;
- transition:1.5s;
+body {
+  margin:0;
+  overflow:hidden;
+  background:#020204;
+  font-family:'Segoe UI';
 }
 
-.heart {width:90px; animation:pulse 1.6s infinite;}
-@keyframes pulse {50%{transform:scale(1.15);}}
+/* 🎬 INTRO */
+#intro {
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:black;
+  z-index:10;
+  cursor:pointer;
+}
+
+.heart {
+  width:90px;
+  animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  50% { transform:scale(1.15); }
+}
 
 /* 💌 TEXT */
 .message-box{
@@ -33,7 +49,15 @@ body {margin:0;overflow:hidden;background:#020204;font-family:'Segoe UI';}
  transform:translateY(20px);
  transition:all 1.5s ease;
  margin-bottom:10px;
- text-shadow:0 0 10px rgba(255,200,150,0.3);
+}
+
+/* 🎥 vignette */
+body::after{
+ content:"";
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ background:radial-gradient(circle, transparent 50%, rgba(0,0,0,0.6));
 }
 </style>
 </head>
@@ -41,7 +65,7 @@ body {margin:0;overflow:hidden;background:#020204;font-family:'Segoe UI';}
 <body>
 
 <div id="intro">
-<svg class="heart" viewBox="0 0 100 100">
+<svg class="heart" id="heart" viewBox="0 0 100 100">
 <path d="M50 90 L20 60 A20 20 0 1 1 50 30 A20 20 0 1 1 80 60 Z"
 fill="#4a0f2a" stroke="#ff2e88" stroke-width="2.5"/>
 </svg>
@@ -58,7 +82,7 @@ resize();addEventListener("resize",resize);
 
 let leaves=[],particles=[],branches=[];
 
-// 🌳 GENERATE TREE
+// 🌳 GENERATE
 function gen(){
   let cx=c.width/2,cy=c.height*0.45;
 
@@ -84,12 +108,11 @@ function gen(){
     });
   }
 
-  // ⭐ particles (stars)
   for(let i=0;i<100;i++){
     particles.push({
       x:Math.random()*c.width,
       y:Math.random()*c.height,
-      size:Math.random()*2+1,
+      size:Math.random()*3+2,
       speed:Math.random()*0.4+0.2,
       phase:Math.random()*1000
     });
@@ -97,7 +120,14 @@ function gen(){
 }
 gen();
 
-// 🌌 BACKGROUND
+// 🖱️ MOUSE
+let mouse={x:0,y:0};
+addEventListener("mousemove",e=>{
+  mouse.x=e.clientX;
+  mouse.y=e.clientY;
+});
+
+// 🌌 BG
 function bg(){
   let g=x.createRadialGradient(c.width/2,c.height/2,50,c.width/2,c.height/2,600);
   g.addColorStop(0,"#1a0a1f");
@@ -121,39 +151,38 @@ function heart(px,py,s,col){
   x.shadowBlur=0;
 }
 
-// ⭐ DRAW STAR PARTICLE
+// ⭐ PARTICLE
 function star(px,py,size,time){
-  let flicker = Math.sin(time*0.005 + size)*0.5+0.5;
+  let flicker=Math.sin(time*0.004+size)*0.5+0.5;
+  let s=size*(1+flicker*0.5);
 
   x.beginPath();
-  for(let i=0;i<5;i++){
-    let angle = i*(Math.PI*2/5);
-    let r = i%2===0 ? size : size/2;
-
-    let sx = px + Math.cos(angle)*r;
-    let sy = py + Math.sin(angle)*r;
-
-    if(i===0) x.moveTo(sx,sy);
-    else x.lineTo(sx,sy);
-  }
+  x.moveTo(px,py-s);
+  x.lineTo(px+s*0.4,py);
+  x.lineTo(px,py+s);
+  x.lineTo(px-s*0.4,py);
   x.closePath();
 
-  x.fillStyle = "rgba(255,220,120,"+(0.6+flicker*0.4)+")";
-  x.shadowBlur = 10;
-  x.shadowColor = "#ffd166";
+  x.fillStyle="rgba(255,230,140,"+(0.7+flicker*0.3)+")";
+  x.shadowBlur=15;
+  x.shadowColor="#ffd166";
   x.fill();
-  x.shadowBlur = 0;
+
+  x.beginPath();
+  x.arc(px,py,s*0.25,0,Math.PI*2);
+  x.fill();
+
+  x.shadowBlur=0;
 }
 
 let grow=0,started=false;
 
-// 🌳 TREE (FIXED VISIBILITY)
+// 🌳 TREE
 function tree(){
   let cx=c.width/2,base=c.height*0.8,top=c.height*0.5;
   let ty=base-(base-top)*grow;
 
-  // thick base trunk
-  let grad = x.createLinearGradient(cx,base,cx,ty);
+  let grad=x.createLinearGradient(cx,base,cx,ty);
   grad.addColorStop(0,"#5a3b24");
   grad.addColorStop(1,"#8b5e3c");
 
@@ -163,18 +192,6 @@ function tree(){
   x.moveTo(cx,base);
   x.lineTo(cx,ty);
   x.stroke();
-
-  // highlight edge
-  x.lineWidth=6;
-  x.strokeStyle="rgba(255,255,255,0.08)";
-  x.beginPath();
-  x.moveTo(cx-2,base);
-  x.lineTo(cx-2,ty);
-  x.stroke();
-
-  // branches
-  x.lineWidth=1;
-  x.strokeStyle="rgba(160,100,60,0.5)";
 
   branches.forEach(b=>{
     x.beginPath();
@@ -194,22 +211,29 @@ function anim(t){
 
   tree();
 
-  // leaves
   leaves.forEach(l=>{
     if(grow>0.6){
-      heart(l.x,l.y+Math.sin(t*0.002+l.p)*2,l.s,l.c);
+      let xPos=l.x;
+      let yPos=l.y+Math.sin(t*0.002+l.p)*2;
+
+      let dx=xPos-mouse.x;
+      let dy=yPos-mouse.y;
+      let dist=Math.sqrt(dx*dx+dy*dy);
+
+      if(dist<120 && dist!==0){
+        let f=(120-dist)*0.05;
+        xPos+=dx/dist*f;
+        yPos+=dy/dist*f;
+      }
+
+      heart(xPos,yPos,l.s,l.c);
     }
   });
 
-  // ⭐ particles
   particles.forEach(p=>{
     star(p.x,p.y,p.size,t);
-
-    p.y -= p.speed;
-    if(p.y<0){
-      p.y=c.height;
-      p.x=Math.random()*c.width;
-    }
+    p.y-=p.speed;
+    if(p.y<0){p.y=c.height;p.x=Math.random()*c.width;}
   });
 
   requestAnimationFrame(anim);
@@ -243,16 +267,24 @@ function showText(){
   });
 }
 
-// 🎬 TRANSITION
+// 🎬 CINEMATIC CLICK
 document.getElementById("intro").onclick=()=>{
-  intro.style.opacity=0;
+  const heartEl=document.getElementById("heart");
+
+  heartEl.style.transition="1s";
+  heartEl.style.transform="translateY(300px) scale(0.8)";
+  heartEl.style.opacity=0.7;
 
   setTimeout(()=>{
-    intro.style.display="none";
+    document.getElementById("intro").style.opacity=0;
+  },800);
+
+  setTimeout(()=>{
+    document.getElementById("intro").style.display="none";
     started=true;
     anim(0);
     showText();
-  },1200);
+  },1500);
 };
 </script>
 
