@@ -718,6 +718,128 @@ drawParticle = function(p,t){
   // restore size (critical fix)
   p.size = originalSize;
 };
+  // ===============================
+// 🎬 CINEMATIC MASTER LAYER
+// ===============================
+
+// 🌌 CAMERA DEPTH
+let camDepth = { x:0, y:0, zoom:1 };
+
+addEventListener("mousemove", e=>{
+  camDepth.x = (e.clientX - innerWidth/2) * 0.01;
+  camDepth.y = (e.clientY - innerHeight/2) * 0.01;
+});
+
+// 🌫️ DEPTH BLUR
+function applyDepthBlur(dist){
+  return Math.min(4, dist * 0.002);
+}
+
+// 🌬️ WIND
+let wind = {
+  angle: Math.PI/6,
+  strength: 0.3
+};
+
+// 🌈 COLOR GRADING OVERLAY
+let grade = document.createElement("div");
+grade.style.position="fixed";
+grade.style.inset="0";
+grade.style.pointerEvents="none";
+grade.style.zIndex="2";
+grade.style.background="linear-gradient(120deg, rgba(255,120,150,0.08), rgba(255,200,150,0.05))";
+document.body.appendChild(grade);
+
+// 🌟 AMBIENT LIGHT
+let light = document.createElement("div");
+light.style.position="fixed";
+light.style.inset="0";
+light.style.pointerEvents="none";
+light.style.zIndex="1";
+document.body.appendChild(light);
+
+// 🌬️ WIND AFFECT LEAVES
+const originalDrawLeaf2 = drawLeaf;
+
+drawLeaf = function(l,t){
+
+  // wind offset
+  let wx = Math.cos(wind.angle) * wind.strength;
+  let wy = Math.sin(wind.angle) * wind.strength;
+
+  l.x += wx * 0.1;
+  l.y += wy * 0.05;
+
+  originalDrawLeaf2(l,t);
+};
+
+// 🌠 PARTICLE TRAILS
+let trails = [];
+
+function addTrail(x,y){
+  trails.push({x,y,life:1});
+}
+
+function drawTrails(){
+  trails.forEach(tr=>{
+    ctx.beginPath();
+    ctx.arc(tr.x,tr.y,2,0,Math.PI*2);
+    ctx.fillStyle = `rgba(255,200,150,${tr.life})`;
+    ctx.fill();
+    tr.life *= 0.92;
+  });
+
+  trails = trails.filter(t=>t.life>0.05);
+}
+
+// 🌬️ PARTICLE WIND + TRAIL
+const originalDrawParticle2 = drawParticle;
+
+drawParticle = function(p,t){
+
+  // wind movement
+  p.x += Math.cos(wind.angle) * 0.1;
+  p.y += Math.sin(wind.angle) * 0.05;
+
+  addTrail(p.x,p.y);
+
+  originalDrawParticle2(p,t);
+};
+
+// 💓 WORLD BREATHING
+let breathe = 0;
+
+// 🎬 PATCH MAIN LOOP AGAIN (SAFE WRAP)
+const originalLoop = loop;
+
+loop = function(t){
+
+  ctx.save();
+
+  // breathing zoom
+  breathe = Math.sin(t*0.001) * 0.01;
+  camDepth.zoom += (1 + breathe - camDepth.zoom) * 0.02;
+
+  ctx.translate(innerWidth/2, innerHeight/2);
+  ctx.scale(camDepth.zoom, camDepth.zoom);
+  ctx.translate(-innerWidth/2 + camDepth.x, -innerHeight/2 + camDepth.y);
+
+  originalLoop(t);
+
+  ctx.restore();
+
+  // 🌫️ ambient glow
+  light.style.background =
+    `radial-gradient(circle at center,
+      rgba(255,140,120,${0.12 + Math.sin(t*0.001)*0.05}),
+      transparent 70%)`;
+
+  // 🌠 trails render (after everything)
+  drawTrails();
+
+  // ⏳ TIME EVOLUTION
+  wind.strength = 0.2 + Math.sin(t*0.0005)*0.15;
+};
 </script>
 
 </body>
