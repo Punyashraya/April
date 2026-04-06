@@ -12,7 +12,7 @@ body {
   font-family:'Segoe UI';
 }
 
-/* 💓 INTRO */
+/* INTRO */
 #intro {
   position:fixed; inset:0;
   display:flex; justify-content:center; align-items:center;
@@ -30,7 +30,7 @@ body {
   50% { transform:scale(1.15); }
 }
 
-/* 💌 TEXT */
+/* TEXT */
 .message-box{
  position:absolute;
  right:6%;
@@ -39,9 +39,11 @@ body {
  color:#fff;
  font-size:15px;
  line-height:1.7;
+ opacity:1;
+ transition:opacity 1s ease;
 }
 
-/* 💖 FINAL BUTTON */
+/* BUTTON */
 #finalBtn{
  position:absolute;
  left:6%;
@@ -59,7 +61,7 @@ body {
  z-index:5;
 }
 
-/* 🎥 vignette */
+/* vignette */
 body::after{
  content:"";
  position:fixed;
@@ -92,7 +94,7 @@ resize();addEventListener("resize",resize);
 let leaves=[],particles=[],branches=[];
 let finalPhase=false;
 
-// 🌳 GENERATE
+// TREE GENERATION
 function gen(){
   let cx=c.width/2,cy=c.height*0.45;
 
@@ -120,7 +122,6 @@ function gen(){
     });
   }
 
-  // ⭐ increase stars visibility
   for(let i=0;i<150;i++){
     particles.push({
       x:Math.random()*c.width,
@@ -134,14 +135,14 @@ function gen(){
 }
 gen();
 
-// 🖱️ mouse
+// MOUSE
 let mouse={x:0,y:0};
 addEventListener("mousemove",e=>{
   mouse.x=e.clientX;
   mouse.y=e.clientY;
 });
 
-// 🌌 BG
+// BACKGROUND
 function bg(){
   let g=x.createRadialGradient(c.width/2,c.height/2,50,c.width/2,c.height/2,600);
   g.addColorStop(0,"#1a0a1f");
@@ -150,7 +151,7 @@ function bg(){
   x.fillRect(0,0,c.width,c.height);
 }
 
-// ❤️ HEART LEAF + HOVER
+// HEART LEAF (WITH HOVER)
 function drawLeaf(l,t){
   let float=Math.sin(t*0.002+l.p)*2;
 
@@ -181,7 +182,7 @@ function drawLeaf(l,t){
   x.shadowBlur=0;
 }
 
-// ❄️⭐✨ PARTICLES (FIXED STAR)
+// PARTICLES
 function drawParticle(p,t){
 
   let dx=p.x-mouse.x;
@@ -194,18 +195,18 @@ function drawParticle(p,t){
     p.y+=dy/dist*f;
   }
 
-  // ⭐ FIXED STAR
+  // STAR
   if(p.type===0){
     let pulse=Math.sin(t*0.004+p.phase)*0.5+0.5;
     let s=p.size*(1+pulse*0.5);
 
     x.beginPath();
-    x.moveTo(p.x, p.y - s); // IMPORTANT FIX
+    x.moveTo(p.x, p.y - s);
 
     for(let i=1;i<5;i++){
-      let angle=i*Math.PI*2/5;
+      let a=i*Math.PI*2/5;
       let r=i%2===0?s:s*0.4;
-      x.lineTo(p.x+Math.sin(angle)*r, p.y-Math.cos(angle)*r);
+      x.lineTo(p.x+Math.sin(a)*r, p.y-Math.cos(a)*r);
     }
 
     x.closePath();
@@ -216,7 +217,7 @@ function drawParticle(p,t){
     x.shadowBlur=0;
   }
 
-  // ❄️ SNOW
+  // SNOW
   else if(p.type===1){
     let s=p.size*1.3;
     x.strokeStyle="rgba(255,255,255,0.85)";
@@ -231,7 +232,7 @@ function drawParticle(p,t){
     x.stroke();
   }
 
-  // ✨ GLOW
+  // GLOW
   else{
     let pulse=Math.sin(t*0.002+p.phase)*0.5+0.5;
 
@@ -253,7 +254,7 @@ function drawParticle(p,t){
   }
 }
 
-// 🌳 TREE
+// TREE
 let grow=0;
 function tree(){
   if(finalPhase) return;
@@ -281,7 +282,7 @@ function tree(){
   });
 }
 
-// 🎬 ANIM
+// ANIMATION
 function anim(t){
   bg();
 
@@ -298,7 +299,7 @@ function anim(t){
   requestAnimationFrame(anim);
 }
 
-// 💌 TEXT
+// TEXT
 const msgs=[
  "Hey you 💕",
  "Happy Birthday 🎂",
@@ -324,32 +325,40 @@ function showText(){
   }, msgs.length*2500 + 1500);
 }
 
-// 🎁 FINAL (CENTER FIX)
+// FINAL PHASE
 document.getElementById("finalBtn").onclick=()=>{
   finalPhase=true;
   leaves=[];
   branches=[];
 
-  const final=document.createElement("div");
+  const box=document.getElementById("box");
+  box.style.opacity=0;
 
-  final.style.position="fixed"; // FIXED
+  setTimeout(()=>{ box.innerHTML=""; },1000);
+
+  let final=document.createElement("div");
+
+  final.style.position="fixed";
   final.style.top="50%";
   final.style.left="50%";
   final.style.transform="translate(-50%, -50%)";
-
   final.style.fontSize="46px";
   final.style.color="white";
   final.style.textAlign="center";
+  final.style.opacity="0";
+  final.style.transition="opacity 2s ease";
   final.style.textShadow="0 0 25px #ff6fa5, 0 0 60px #ff2e88";
 
   final.innerHTML="Happy Birthday<br>Wewe 💕";
 
   document.body.appendChild(final);
 
+  setTimeout(()=>{ final.style.opacity=1; },200);
+
   document.getElementById("finalBtn").style.opacity=0;
 };
 
-// 🎬 INTRO
+// INTRO
 document.getElementById("intro").onclick=()=>{
   intro.style.opacity=0;
   setTimeout(()=>{
