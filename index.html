@@ -49,27 +49,18 @@ body {
  text-shadow:0 0 12px rgba(255,180,140,0.25);
 }
 
-/* 💖 FINAL BUTTON */
-#finalBtn{
+/* 💖 FINAL CENTER TEXT */
+#finalText{
  position:absolute;
- left:6%;
- bottom:40px;
- padding:12px 18px;
- font-size:18px;
- border:none;
- border-radius:20px;
- background:rgba(255,100,150,0.25);
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ font-size:48px;
+ text-align:center;
  color:white;
- backdrop-filter:blur(10px);
- cursor:pointer;
  opacity:0;
- transition:all 0.8s ease;
- z-index:5;
-}
-
-#finalBtn:hover{
- background:rgba(255,100,150,0.45);
- transform:scale(1.05);
+ transition:all 2s ease;
+ text-shadow:0 0 30px #ff6fa5, 0 0 70px #ff2e88;
 }
 
 /* 🎥 vignette */
@@ -94,7 +85,7 @@ fill="#4a0f2a" stroke="#ff2e88" stroke-width="2.5"/>
 
 <canvas id="c"></canvas>
 <div class="message-box" id="box"></div>
-<button id="finalBtn">💖 Surprise</button>
+<div id="finalText">Happy Birthday<br>Wewe 💕</div>
 
 <script>
 const c=document.getElementById("c"),x=c.getContext("2d");
@@ -103,6 +94,7 @@ function resize(){c.width=innerWidth;c.height=innerHeight;}
 resize();addEventListener("resize",resize);
 
 let leaves=[],particles=[],branches=[],petals=[];
+let phase=1; // 1=tree, 2=final
 
 // 🌳 GENERATE
 function gen(){
@@ -190,8 +182,7 @@ function heart(px,py,s,col){
 
 // ❄️⭐ PARTICLES
 function drawParticle(p,t){
-
-  if(p.type===0){ // star
+  if(p.type===0){
     let f=Math.sin(t*0.004+p.phase)*0.5+0.5;
     let s=p.size*(1+f*0.5);
 
@@ -209,10 +200,8 @@ function drawParticle(p,t){
     x.fill();
     x.shadowBlur=0;
   }
-
-  else if(p.type===1){ // snow
+  else if(p.type===1){
     let s=p.size*1.2;
-
     x.strokeStyle="rgba(255,255,255,0.7)";
     x.lineWidth=0.8;
 
@@ -224,7 +213,6 @@ function drawParticle(p,t){
     }
     x.stroke();
   }
-
   else{
     x.beginPath();
     x.arc(p.x,p.y,p.size*0.6,0,Math.PI*2);
@@ -260,6 +248,8 @@ function drawPetal(p){
 // 🌳 tree
 let grow=0;
 function tree(){
+  if(phase===2) return; // ❌ remove tree in final phase
+
   let cx=c.width/2,base=c.height*0.8,top=c.height*0.5;
   let ty=base-(base-top)*grow;
 
@@ -299,24 +289,16 @@ function anim(t){
 
   tree();
 
-  leaves.forEach(l=>{
-    if(grow>0.6){
-      let xPos=l.x;
-      let yPos=l.y+Math.sin(t*0.002+l.p)*2;
+  if(phase===1){
+    leaves.forEach(l=>{
+      if(grow>0.6){
+        let xPos=l.x;
+        let yPos=l.y+Math.sin(t*0.002+l.p)*2;
 
-      let dx=xPos-mouse.x;
-      let dy=yPos-mouse.y;
-      let d=Math.sqrt(dx*dx+dy*dy);
-
-      if(d<120 && d!==0){
-        let f=(120-d)*0.05;
-        xPos+=dx/d*f;
-        yPos+=dy/d*f;
+        heart(xPos,yPos,l.s,l.c);
       }
-
-      heart(xPos,yPos,l.s,l.c);
-    }
-  });
+    });
+  }
 
   particles.forEach(p=>drawParticle(p,t));
   petals.forEach(p=>drawPetal(p));
@@ -351,37 +333,15 @@ function showText(){
     },i*2500);
   });
 
+  // 🎬 AUTO FINAL TRANSITION
   setTimeout(()=>{
-    document.getElementById("finalBtn").style.opacity=1;
-  }, msgs.length*2500 + 1500);
+    phase=2;
+    box.innerHTML="";
+    document.getElementById("finalText").style.opacity=1;
+  }, msgs.length*2500 + 2000);
 }
 
-// 🎁 FINAL TRANSITION
-document.getElementById("finalBtn").onclick=()=>{
-  leaves=[];
-  branches=[];
-
-  const box=document.getElementById("box");
-  box.innerHTML="";
-
-  let final=document.createElement("div");
-  final.style.fontSize="42px";
-  final.style.textAlign="center";
-  final.style.marginTop="20%";
-  final.style.textShadow="0 0 25px #ff6fa5, 0 0 60px #ff2e88";
-  final.innerHTML="Happy Birthday<br>Wewe 💕";
-
-  box.appendChild(final);
-
-  particles.forEach(p=>{
-    p.speed*=2;
-    p.size*=1.5;
-  });
-
-  document.getElementById("finalBtn").style.opacity=0;
-};
-
-// 🎬 INTRO CLICK
+// 🎬 INTRO
 document.getElementById("intro").onclick=()=>{
   const heart=document.getElementById("heart");
 
