@@ -500,6 +500,128 @@ anim = function(t){
     swirlToCenter();
   }
 };
+  // ===============================
+// 💓 HEARTBEAT SYNC
+// ===============================
+
+const heartbeat = new Audio("https://cdn.pixabay.com/download/audio/2022/03/10/audio_3d2b9f7c1a.mp3");
+heartbeat.volume = 0.25;
+
+let beatTimer = 0;
+
+function playHeartbeat(){
+  heartbeat.currentTime = 0;
+  heartbeat.play().catch(()=>{});
+}
+
+// trigger after intro
+document.getElementById("intro").addEventListener("click", ()=>{
+  setTimeout(()=>{
+    playHeartbeat();
+  }, 1200);
+});
+
+// sync with animation
+const originalAnim2 = anim;
+
+anim = function(t){
+
+  originalAnim2(t);
+
+  // 💓 heartbeat rhythm
+  beatTimer += 0.016;
+
+  let interval = finalPhase ? 0.6 : 1; // faster at end
+
+  if(beatTimer > interval){
+    playHeartbeat();
+    beatTimer = 0;
+  }
+};
+
+// ===============================
+// 💌 ENHANCED HIDDEN MESSAGES
+// ===============================
+
+const hiddenMessages = [
+  "You're my peace 💖",
+  "I adore you 🌸",
+  "You make life magical ✨",
+  "Always you 💕",
+  "My favorite person 💫",
+  "You mean everything 💖"
+];
+
+function createSparkle(xPos, yPos, msg){
+
+  let el = document.createElement("div");
+
+  el.innerText = "✦";
+  el.style.position = "fixed";
+  el.style.left = xPos;
+  el.style.top = yPos;
+  el.style.fontSize = "16px";
+  el.style.color = "rgba(255,220,180,0.7)";
+  el.style.cursor = "pointer";
+  el.style.opacity = "0.3";
+  el.style.transition = "all 0.6s ease";
+  el.style.textShadow = "0 0 8px rgba(255,200,150,0.5)";
+
+  // ✨ subtle floating animation
+  let floatOffset = Math.random()*20;
+
+  setInterval(()=>{
+    el.style.transform = `translateY(${Math.sin(Date.now()*0.001 + floatOffset)*5}px)`;
+  },30);
+
+  // ✨ shimmer effect
+  setInterval(()=>{
+    el.style.opacity = 0.2 + Math.random()*0.5;
+  },800);
+
+  // 💌 click interaction
+  el.onclick = ()=>{
+    let note = document.createElement("div");
+
+    note.innerText = msg;
+    note.style.position = "fixed";
+    note.style.top = "50%";
+    note.style.left = "50%";
+    note.style.transform = "translate(-50%,-50%)";
+    note.style.fontSize = "22px";
+    note.style.color = "#fff";
+    note.style.padding = "10px 20px";
+    note.style.borderRadius = "20px";
+    note.style.background = "rgba(255,120,160,0.2)";
+    note.style.backdropFilter = "blur(10px)";
+    note.style.textShadow = "0 0 10px rgba(255,150,200,0.6)";
+    note.style.opacity = "0";
+    note.style.transition = "opacity 0.6s ease";
+
+    document.body.appendChild(note);
+
+    setTimeout(()=> note.style.opacity=1, 50);
+
+    setTimeout(()=>{
+      note.style.opacity=0;
+      setTimeout(()=> note.remove(),600);
+    },2500);
+  };
+
+  document.body.appendChild(el);
+}
+
+// scatter sparkles (hidden)
+setTimeout(()=>{
+  for(let i=0;i<hiddenMessages.length;i++){
+
+    createSparkle(
+      Math.random()*80 + 10 + "%",
+      Math.random()*70 + 15 + "%",
+      hiddenMessages[i]
+    );
+  }
+}, 4000);
 </script>
 
 </body>
