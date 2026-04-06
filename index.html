@@ -367,6 +367,139 @@ document.getElementById("intro").onclick=()=>{
     showText();
   },1200);
 };
+  // ===============================
+// 🌟 V3 EXTENSION LAYER (ADD ONLY)
+// ===============================
+
+// 🎵 MUSIC
+const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3");
+music.loop = true;
+music.volume = 0.4;
+
+document.getElementById("intro").addEventListener("click", () => {
+  music.play().catch(()=>{});
+});
+
+// 🌸 PETALS (separate layer)
+let petals = [];
+for(let i=0;i<40;i++){
+  petals.push({
+    x:Math.random()*c.width,
+    y:Math.random()*c.height,
+    size:Math.random()*4+2,
+    speed:Math.random()*0.5+0.2,
+    drift:Math.random()*2-1
+  });
+}
+
+function drawPetals(){
+  petals.forEach(p=>{
+    x.beginPath();
+    x.ellipse(p.x,p.y,p.size,p.size*0.6,0,0,Math.PI*2);
+    x.fillStyle="rgba(255,170,190,0.5)";
+    x.fill();
+
+    p.y+=p.speed;
+    p.x+=p.drift;
+
+    if(p.y>c.height){
+      p.y=0;
+      p.x=Math.random()*c.width;
+    }
+  });
+}
+
+// 💫 PARALLAX CAMERA
+let cam = {x:0,y:0};
+addEventListener("mousemove",e=>{
+  cam.x = (e.clientX - innerWidth/2) * 0.01;
+  cam.y = (e.clientY - innerHeight/2) * 0.01;
+});
+
+// 📱 TOUCH SUPPORT
+addEventListener("touchmove",e=>{
+  mouse.x = e.touches[0].clientX;
+  mouse.y = e.touches[0].clientY;
+});
+
+// 🌙 DAY → NIGHT SHIFT
+let dayProgress = 0;
+function dayNight(){
+  if(dayProgress < 1) dayProgress += 0.0005;
+
+  let overlay = document.getElementById("dayOverlay");
+  if(!overlay){
+    overlay = document.createElement("div");
+    overlay.id = "dayOverlay";
+    overlay.style.position="fixed";
+    overlay.style.inset="0";
+    overlay.style.pointerEvents="none";
+    document.body.appendChild(overlay);
+  }
+
+  overlay.style.background =
+    `linear-gradient(rgba(255,180,150,${0.2*(1-dayProgress)}), rgba(10,10,30,${dayProgress*0.6}))`;
+}
+
+// 💌 HIDDEN NOTES
+const notes = [
+ "I love you 💕",
+ "You are my favorite person 🌸",
+ "Forever yours 💖"
+];
+
+for(let i=0;i<3;i++){
+  let n=document.createElement("div");
+  n.innerText="✨";
+  n.style.position="fixed";
+  n.style.left=(20+i*60)+"%";
+  n.style.top="80%";
+  n.style.cursor="pointer";
+  n.style.fontSize="22px";
+
+  n.onclick=()=>{
+    alert(notes[i]);
+  };
+
+  document.body.appendChild(n);
+}
+
+// 🌪️ PARTICLE SWIRL INTO FINAL TEXT
+function swirlToCenter(){
+  let cx=innerWidth/2, cy=innerHeight/2;
+
+  particles.forEach(p=>{
+    let dx=cx-p.x;
+    let dy=cy-p.y;
+
+    p.x += dx*0.03;
+    p.y += dy*0.03;
+  });
+}
+
+// 🧠 PATCH ANIMATION LOOP (WITHOUT MODIFYING BASE)
+
+const originalAnim = anim;
+
+anim = function(t){
+
+  // apply parallax
+  x.save();
+  x.translate(cam.x, cam.y);
+
+  originalAnim(t);
+
+  x.restore();
+
+  // overlays
+  drawPetals();
+  dayNight();
+
+  // swirl only in final phase
+  if(finalPhase){
+    swirlToCenter();
+  }
+};
 </script>
 
 </body>
