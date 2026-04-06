@@ -688,6 +688,36 @@ anim = function(t){
     }
   });
 };
+  // ===============================
+// 💓 FIX PARTICLE GROWTH BUG
+// ===============================
+
+// store original size once
+particles.forEach(p=>{
+  if(!p.baseSize){
+    p.baseSize = p.size;
+  }
+});
+
+// override particle rendering safely
+const originalDrawParticle = drawParticle;
+
+drawParticle = function(p,t){
+
+  // ensure base size exists
+  if(!p.baseSize) p.baseSize = p.size;
+
+  // apply temporary pulse (no permanent growth)
+  let scale = 1 + (beatGlow * 0.25);
+  let originalSize = p.size;
+
+  p.size = p.baseSize * scale;
+
+  originalDrawParticle(p,t);
+
+  // restore size (critical fix)
+  p.size = originalSize;
+};
 </script>
 
 </body>
