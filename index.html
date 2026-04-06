@@ -41,14 +41,6 @@ body {
  line-height:1.7;
 }
 
-.message{
- opacity:0;
- transform:translateY(20px);
- transition:all 1.5s ease;
- margin-bottom:12px;
- text-shadow:0 0 12px rgba(255,180,140,0.25);
-}
-
 /* 💖 FINAL BUTTON */
 #finalBtn{
  position:absolute;
@@ -65,11 +57,6 @@ body {
  opacity:0;
  transition:all 0.8s ease;
  z-index:5;
-}
-
-#finalBtn:hover{
- background:rgba(255,100,150,0.45);
- transform:scale(1.05);
 }
 
 /* 🎥 vignette */
@@ -133,14 +120,15 @@ function gen(){
     });
   }
 
-  for(let i=0;i<130;i++){
+  // ⭐ increase stars visibility
+  for(let i=0;i<150;i++){
     particles.push({
       x:Math.random()*c.width,
       y:Math.random()*c.height,
-      size:Math.random()*4+1,
-      speed:Math.random()*0.5+0.2,
+      size:Math.random()*4+1.5,
+      speed:Math.random()*0.4+0.2,
       phase:Math.random()*1000,
-      type:Math.random()<0.4?0:(Math.random()<0.7?1:2)
+      type:Math.random()<0.5?0:(Math.random()<0.8?1:2)
     });
   }
 }
@@ -162,49 +150,67 @@ function bg(){
   x.fillRect(0,0,c.width,c.height);
 }
 
-// ❤️ heart leaf
-function heart(px,py,s,col){
+// ❤️ HEART LEAF + HOVER
+function drawLeaf(l,t){
+  let float=Math.sin(t*0.002+l.p)*2;
+
+  let dx=l.x-mouse.x;
+  let dy=l.y-mouse.y;
+  let dist=Math.sqrt(dx*dx+dy*dy);
+
+  let xPos=l.x;
+  let yPos=l.y+float;
+
+  if(dist<120 && dist!==0){
+    let force=(120-dist)*0.05;
+    xPos+=dx/dist*force;
+    yPos+=dy/dist*force;
+  }
+
   x.beginPath();
-  x.moveTo(px,py);
-  x.bezierCurveTo(px,py-s,px-s,py-s,px-s,py);
-  x.bezierCurveTo(px-s,py+s,px,py+s*1.5,px,py+s*2);
-  x.bezierCurveTo(px,py+s*1.5,px+s,py+s,px+s,py);
-  x.bezierCurveTo(px+s,py-s,px,py-s,px,py);
-  x.fillStyle=col;
+  x.moveTo(xPos,yPos);
+  x.bezierCurveTo(xPos,yPos-l.s,xPos-l.s,yPos-l.s,xPos-l.s,yPos);
+  x.bezierCurveTo(xPos-l.s,yPos+l.s,xPos,yPos+l.s*1.5,xPos,yPos+l.s*2);
+  x.bezierCurveTo(xPos,yPos+l.s*1.5,xPos+l.s,yPos+l.s,xPos+l.s,yPos);
+  x.bezierCurveTo(xPos+l.s,yPos-l.s,xPos,yPos-l.s,xPos,yPos);
+
+  x.fillStyle=l.c;
   x.shadowBlur=10;
-  x.shadowColor=col;
+  x.shadowColor=l.c;
   x.fill();
   x.shadowBlur=0;
 }
 
-// ❄️⭐✨ PARTICLES WITH INTERACTION
+// ❄️⭐✨ PARTICLES (FIXED STAR)
 function drawParticle(p,t){
 
   let dx=p.x-mouse.x;
   let dy=p.y-mouse.y;
   let dist=Math.sqrt(dx*dx+dy*dy);
 
-  if(dist<120 && dist!==0){
-    let force=(120-dist)*0.02;
-    p.x+=dx/dist*force;
-    p.y+=dy/dist*force;
+  if(dist<100 && dist!==0){
+    let f=(100-dist)*0.02;
+    p.x+=dx/dist*f;
+    p.y+=dy/dist*f;
   }
 
-  // ⭐ STAR
+  // ⭐ FIXED STAR
   if(p.type===0){
     let pulse=Math.sin(t*0.004+p.phase)*0.5+0.5;
-    let s=p.size*(1+pulse*0.4);
+    let s=p.size*(1+pulse*0.5);
 
     x.beginPath();
-    for(let i=0;i<5;i++){
-      let a=i*Math.PI*2/5;
-      let r=i%2===0?s:s*0.4;
-      x.lineTo(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r);
-    }
-    x.closePath();
+    x.moveTo(p.x, p.y - s); // IMPORTANT FIX
 
-    x.fillStyle="rgba(255,230,140,"+(0.7+pulse*0.3)+")";
-    x.shadowBlur=18;
+    for(let i=1;i<5;i++){
+      let angle=i*Math.PI*2/5;
+      let r=i%2===0?s:s*0.4;
+      x.lineTo(p.x+Math.sin(angle)*r, p.y-Math.cos(angle)*r);
+    }
+
+    x.closePath();
+    x.fillStyle="rgba(255,230,140,0.9)";
+    x.shadowBlur=20;
     x.shadowColor="#ffd166";
     x.fill();
     x.shadowBlur=0;
@@ -213,7 +219,7 @@ function drawParticle(p,t){
   // ❄️ SNOW
   else if(p.type===1){
     let s=p.size*1.3;
-    x.strokeStyle="rgba(255,255,255,0.8)";
+    x.strokeStyle="rgba(255,255,255,0.85)";
     x.lineWidth=1;
 
     x.beginPath();
@@ -231,8 +237,8 @@ function drawParticle(p,t){
 
     x.beginPath();
     x.arc(p.x,p.y,p.size*(0.8+pulse*0.5),0,Math.PI*2);
-    x.fillStyle="rgba(255,240,180,0.35)";
-    x.shadowBlur=25;
+    x.fillStyle="rgba(255,240,180,0.5)";
+    x.shadowBlur=30;
     x.shadowColor="#ffd166";
     x.fill();
     x.shadowBlur=0;
@@ -255,12 +261,8 @@ function tree(){
   let cx=c.width/2,base=c.height*0.8,top=c.height*0.5;
   let ty=base-(base-top)*grow;
 
-  let grad=x.createLinearGradient(cx,base,cx,ty);
-  grad.addColorStop(0,"#5a3b24");
-  grad.addColorStop(1,"#8b5e3c");
-
   x.lineWidth=22;
-  x.strokeStyle=grad;
+  x.strokeStyle="#7a4a2a";
   x.beginPath();
   x.moveTo(cx,base);
   x.lineTo(cx,ty);
@@ -270,20 +272,16 @@ function tree(){
     let ex=cx+(b.ex-cx)*grow;
     let ey=ty+(b.ey-ty)*grow;
 
-    let dist=Math.hypot(ex-cx,ey-ty)/300;
-    let alpha=(b.alpha*(1-dist))+0.25;
-
     x.beginPath();
     x.lineWidth=b.w;
-    x.strokeStyle="rgba(190,130,80,"+alpha+")";
-
+    x.strokeStyle="rgba(200,140,90,0.5)";
     x.moveTo(cx,ty);
     x.quadraticCurveTo(b.mx,b.my,ex,ey);
     x.stroke();
   });
 }
 
-// 🎬 ANIMATION
+// 🎬 ANIM
 function anim(t){
   bg();
 
@@ -292,9 +290,7 @@ function anim(t){
   tree();
 
   leaves.forEach(l=>{
-    if(grow>0.6){
-      heart(l.x,l.y+Math.sin(t*0.002+l.p)*2,l.s,l.c);
-    }
+    if(grow>0.6) drawLeaf(l,t);
   });
 
   particles.forEach(p=>drawParticle(p,t));
@@ -317,15 +313,9 @@ function showText(){
   msgs.forEach((m,i)=>{
     setTimeout(()=>{
       let d=document.createElement("div");
-      d.className="message";
       d.textContent=m;
       box.appendChild(d);
-
-      setTimeout(()=>{
-        d.style.opacity=1;
-        d.style.transform="translateY(0)";
-      },100);
-
+      d.style.opacity=1;
     },i*2500);
   });
 
@@ -334,53 +324,39 @@ function showText(){
   }, msgs.length*2500 + 1500);
 }
 
-// 🎁 FINAL
+// 🎁 FINAL (CENTER FIX)
 document.getElementById("finalBtn").onclick=()=>{
   finalPhase=true;
   leaves=[];
   branches=[];
 
-  const box=document.getElementById("box");
-  box.innerHTML="";
+  const final=document.createElement("div");
 
-  let final=document.createElement("div");
-
-  final.style.position="absolute";
+  final.style.position="fixed"; // FIXED
   final.style.top="50%";
   final.style.left="50%";
   final.style.transform="translate(-50%, -50%)";
+
   final.style.fontSize="46px";
-  final.style.textAlign="center";
   final.style.color="white";
+  final.style.textAlign="center";
   final.style.textShadow="0 0 25px #ff6fa5, 0 0 60px #ff2e88";
 
   final.innerHTML="Happy Birthday<br>Wewe 💕";
 
-  box.appendChild(final);
-
-  particles.forEach(p=>{
-    p.speed*=2;
-    p.size*=1.5;
-  });
+  document.body.appendChild(final);
 
   document.getElementById("finalBtn").style.opacity=0;
 };
 
 // 🎬 INTRO
 document.getElementById("intro").onclick=()=>{
-  const heart=document.getElementById("heart");
-
-  heart.style.transition="1s";
-  heart.style.transform="translateY(300px) scale(0.8)";
-  heart.style.opacity=0.7;
-
-  setTimeout(()=>{ intro.style.opacity=0; },800);
-
+  intro.style.opacity=0;
   setTimeout(()=>{
     intro.style.display="none";
     anim(0);
     showText();
-  },1500);
+  },1200);
 };
 </script>
 
