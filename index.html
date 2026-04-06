@@ -622,6 +622,72 @@ setTimeout(()=>{
     );
   }
 }, 4000);
+  // ===============================
+// 💓 VISUAL HEARTBEAT SYNC
+// ===============================
+
+let beatPulse = 0;
+let beatGlow = 0;
+
+// hook into heartbeat trigger
+const originalPlayHeartbeat = playHeartbeat;
+
+playHeartbeat = function(){
+  originalPlayHeartbeat();
+
+  // trigger visual pulse
+  beatPulse = 1;
+  beatGlow = 1;
+};
+
+// 🌳 override leaf rendering (ADD effect without breaking base)
+const originalDrawLeaf = drawLeaf;
+
+drawLeaf = function(l,t){
+
+  // scale pulse
+  let pulseScale = 1 + (beatPulse * 0.25);
+
+  let originalSize = l.s;
+  l.s = originalSize * pulseScale;
+
+  originalDrawLeaf(l,t);
+
+  l.s = originalSize;
+};
+
+// 🌌 screen glow overlay
+let glowLayer = document.createElement("div");
+glowLayer.style.position = "fixed";
+glowLayer.style.inset = "0";
+glowLayer.style.pointerEvents = "none";
+glowLayer.style.zIndex = "3";
+document.body.appendChild(glowLayer);
+
+// 🎬 extend animation safely
+const originalAnim3 = anim;
+
+anim = function(t){
+
+  originalAnim3(t);
+
+  // decay pulse
+  beatPulse *= 0.92;
+  beatGlow *= 0.9;
+
+  // ✨ glow flash
+  glowLayer.style.background =
+    `radial-gradient(circle at center,
+      rgba(255,120,160,${0.15 * beatGlow}),
+      transparent 60%)`;
+
+  // ✨ boost particles glow subtly
+  particles.forEach(p=>{
+    if(beatGlow > 0.1){
+      p.size *= (1 + beatGlow * 0.02);
+    }
+  });
+};
 </script>
 
 </body>
