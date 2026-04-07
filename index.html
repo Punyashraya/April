@@ -12,6 +12,7 @@ body {
   font-family:'Segoe UI';
 }
 
+/* INTRO */
 #intro {
   position:fixed; inset:0;
   display:flex; justify-content:center; align-items:center;
@@ -29,6 +30,7 @@ body {
   50% { transform:scale(1.15); }
 }
 
+/* TEXT */
 .message-box{
  position:absolute;
  right:6%;
@@ -41,6 +43,7 @@ body {
  transition:opacity 1s ease;
 }
 
+/* BUTTON */
 #finalBtn{
  position:absolute;
  left:6%;
@@ -58,6 +61,7 @@ body {
  z-index:5;
 }
 
+/* vignette */
 body::after{
  content:"";
  position:fixed;
@@ -71,7 +75,7 @@ body::after{
 <body>
 
 <div id="intro">
-<svg class="heart" viewBox="0 0 100 100">
+<svg class="heart" id="heart" viewBox="0 0 100 100">
 <path d="M50 90 L20 60 A20 20 0 1 1 50 30 A20 20 0 1 1 80 60 Z"
 fill="#4a0f2a" stroke="#ff2e88" stroke-width="2.5"/>
 </svg>
@@ -90,8 +94,7 @@ resize();addEventListener("resize",resize);
 let leaves=[],particles=[],branches=[];
 let finalPhase=false;
 
-// ================= BASE =================
-
+// TREE GENERATION
 function gen(){
   let cx=c.width/2,cy=c.height*0.45;
 
@@ -114,7 +117,8 @@ function gen(){
       ex:lx,ey:ly,
       mx:(cx+lx)/2+(Math.random()*20-10),
       my:(cy+ly)/2,
-      w:0.5+Math.random()*0.4
+      w:0.5+Math.random()*0.4,
+      alpha:0.35+Math.random()*0.2
     });
   }
 
@@ -131,12 +135,14 @@ function gen(){
 }
 gen();
 
+// MOUSE
 let mouse={x:0,y:0};
 addEventListener("mousemove",e=>{
   mouse.x=e.clientX;
   mouse.y=e.clientY;
 });
 
+// BACKGROUND
 function bg(){
   let g=x.createRadialGradient(c.width/2,c.height/2,50,c.width/2,c.height/2,600);
   g.addColorStop(0,"#1a0a1f");
@@ -145,6 +151,7 @@ function bg(){
   x.fillRect(0,0,c.width,c.height);
 }
 
+// HEART LEAF
 function drawLeaf(l,t){
   let float=Math.sin(t*0.002+l.p)*2;
 
@@ -175,21 +182,34 @@ function drawLeaf(l,t){
   x.shadowBlur=0;
 }
 
+// PARTICLES
 function drawParticle(p,t){
-  p.y-=p.speed;
-  if(p.y<0){
-    p.y=c.height;
-    p.x=Math.random()*c.width;
+  let dx=p.x-mouse.x;
+  let dy=p.y-mouse.y;
+  let dist=Math.sqrt(dx*dx+dy*dy);
+
+  if(dist<100 && dist!==0){
+    let f=(100-dist)*0.02;
+    p.x+=dx/dist*f;
+    p.y+=dy/dist*f;
   }
 
   x.beginPath();
   x.arc(p.x,p.y,p.size,0,Math.PI*2);
   x.fillStyle="rgba(255,240,180,0.5)";
   x.fill();
+
+  p.y-=p.speed;
+  p.x+=Math.sin(t*0.001+p.phase)*0.25;
+
+  if(p.y<0){
+    p.y=c.height;
+    p.x=Math.random()*c.width;
+  }
 }
 
+// TREE
 let grow=0;
-
 function tree(){
   if(finalPhase) return;
 
@@ -216,6 +236,7 @@ function tree(){
   });
 }
 
+// ANIMATION
 function anim(t){
   bg();
 
@@ -232,8 +253,7 @@ function anim(t){
   requestAnimationFrame(anim);
 }
 
-// ================= TEXT =================
-
+// TEXT
 const msgs=[
  "Hey you 💕",
  "Happy Birthday 🎂",
@@ -258,13 +278,16 @@ function showText(){
   }, msgs.length*2500 + 1500);
 }
 
-// ================= FINAL =================
-
+// FINAL PHASE
 document.getElementById("finalBtn").onclick=()=>{
   finalPhase=true;
+  leaves=[];
+  branches=[];
 
   const box=document.getElementById("box");
   box.style.opacity=0;
+
+  setTimeout(()=>{ box.innerHTML=""; },1000);
 
   let final=document.createElement("div");
 
@@ -274,57 +297,27 @@ document.getElementById("finalBtn").onclick=()=>{
   final.style.transform="translate(-50%, -50%)";
   final.style.fontSize="46px";
   final.style.color="white";
+  final.style.textAlign="center";
+  final.style.opacity="0";
+  final.style.transition="opacity 2s ease";
+  final.style.textShadow="0 0 25px #ff6fa5, 0 0 60px #ff2e88";
+
   final.innerHTML="Happy Birthday<br>Wewe 💕";
 
   document.body.appendChild(final);
+
+  setTimeout(()=>{ final.style.opacity=1; },200);
+
+  document.getElementById("finalBtn").style.opacity=0;
 };
 
-// ================= SAFE EXTENSIONS =================
-
-let started=false;
-
-const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3");
-
-let petals=[];
-for(let i=0;i<30;i++){
-  petals.push({x:Math.random()*c.width,y:Math.random()*c.height});
-}
-
-function extraRender(){
-  petals.forEach(p=>{
-    x.beginPath();
-    x.arc(p.x,p.y,2,0,Math.PI*2);
-    x.fillStyle="pink";
-    x.fill();
-
-    p.y+=0.3;
-    if(p.y>c.height) p.y=0;
-  });
-
-  requestAnimationFrame(extraRender);
-}
-
-function startExtensions(){
-  music.play().catch(()=>{});
-  extraRender();
-}
-
-// ================= FIXED INTRO =================
-
-const intro = document.getElementById("intro");
-
-intro.onclick=()=>{
-
-  if(started) return;
-  started=true;
-
+// INTRO
+document.getElementById("intro").onclick=()=>{
   intro.style.opacity=0;
-
   setTimeout(()=>{
     intro.style.display="none";
     anim(0);
     showText();
-    startExtensions();
   },1200);
 };
 </script>
