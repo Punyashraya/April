@@ -94,7 +94,7 @@ resize();addEventListener("resize",resize);
 let leaves=[],particles=[],branches=[];
 let finalPhase=false;
 
-// TREE GENERATION
+// TREE
 function gen(){
   let cx=c.width/2,cy=c.height*0.45;
 
@@ -117,8 +117,7 @@ function gen(){
       ex:lx,ey:ly,
       mx:(cx+lx)/2+(Math.random()*20-10),
       my:(cy+ly)/2,
-      w:0.5+Math.random()*0.4,
-      alpha:0.35+Math.random()*0.2
+      w:0.5+Math.random()*0.4
     });
   }
 
@@ -135,96 +134,153 @@ function gen(){
 }
 gen();
 
-// (⚠️ everything else unchanged... skipping for brevity in explanation)
-
-// ===============================
-// 💖 CINEMATIC FINAL TEXT (FIXED)
-// ===============================
-
-const observer = new MutationObserver(() => {
-
-  const finalText = Array.from(document.body.children)
-    .find(el => el.innerHTML && el.innerHTML.includes("Happy Birthday"));
-
-  if(!finalText || finalText._enhanced) return;
-
-  finalText._enhanced = true;
-
-  finalText.style.fontWeight = "600";
-  finalText.style.letterSpacing = "1px";
-  finalText.style.lineHeight = "1.3";
-
-  finalText.style.opacity = "0";
-  finalText.style.transform = "translate(-50%, -40%) scale(0.9)";
-  finalText.style.filter = "blur(8px)";
-
-  finalText.style.background = "linear-gradient(90deg,#ff8fa3,#ffd1dc,#ff8fa3)";
-  finalText.style.backgroundSize = "200% 100%";
-  finalText.style.webkitBackgroundClip = "text";
-  finalText.style.webkitTextFillColor = "transparent";
-
-  finalText.style.textShadow = `
-    0 0 10px rgba(255,120,160,0.6),
-    0 0 25px rgba(255,120,160,0.5),
-    0 0 60px rgba(255,80,140,0.4)
-  `;
-
-  requestAnimationFrame(()=>{
-    finalText.style.transition = "all 2s cubic-bezier(.2,.8,.2,1)";
-    finalText.style.opacity = "1";
-    finalText.style.transform = "translate(-50%, -50%) scale(1)";
-    finalText.style.filter = "blur(0px)";
-  });
-
-  let t = 0;
-
-  function animateText(){
-    t += 0.02;
-
-    let scale = 1 + Math.sin(t) * 0.025;
-    let floatY = Math.sin(t * 0.8) * 6;
-    let glow = 20 + Math.sin(t * 2) * 15;
-    let bgPos = (t * 40) % 200;
-
-    finalText.style.transform =
-      `translate(-50%, calc(-50% + ${floatY}px)) scale(${scale})`;
-
-    finalText.style.textShadow = `
-      0 0 ${glow}px rgba(255,120,160,0.6),
-      0 0 ${glow*2}px rgba(255,80,140,0.4)
-    `;
-
-    finalText.style.backgroundPosition = `${bgPos}% 50%`;
-
-    finalText.style.letterSpacing =
-      `${1 + Math.sin(t*0.5) * 0.5}px`;
-
-    requestAnimationFrame(animateText);
-  }
-
-  animateText();
-
-  function pullParticles(){
-    let rect = finalText.getBoundingClientRect();
-    let cx = rect.left + rect.width/2;
-    let cy = rect.top + rect.height/2;
-
-    particles.forEach(p=>{
-      let dx = cx - p.x;
-      let dy = cy - p.y;
-
-      p.x += dx * 0.002;
-      p.y += dy * 0.002;
-    });
-
-    requestAnimationFrame(pullParticles);
-  }
-
-  pullParticles();
+// MOUSE
+let mouse={x:0,y:0};
+addEventListener("mousemove",e=>{
+  mouse.x=e.clientX;
+  mouse.y=e.clientY;
 });
 
-observer.observe(document.body, { childList: true });
+// BACKGROUND
+function bg(){
+  let g=x.createRadialGradient(c.width/2,c.height/2,50,c.width/2,c.height/2,600);
+  g.addColorStop(0,"#1a0a1f");
+  g.addColorStop(1,"#020204");
+  x.fillStyle=g;
+  x.fillRect(0,0,c.width,c.height);
+}
 
+// LEAF
+function drawLeaf(l,t){
+  let float=Math.sin(t*0.002+l.p)*2;
+
+  let dx=l.x-mouse.x;
+  let dy=l.y-mouse.y;
+  let dist=Math.sqrt(dx*dx+dy*dy);
+
+  let xPos=l.x;
+  let yPos=l.y+float;
+
+  if(dist<120 && dist!==0){
+    let force=(120-dist)*0.05;
+    xPos+=dx/dist*force;
+    yPos+=dy/dist*force;
+  }
+
+  x.beginPath();
+  x.arc(xPos,yPos,l.s,0,Math.PI*2);
+  x.fillStyle=l.c;
+  x.shadowBlur=10;
+  x.shadowColor=l.c;
+  x.fill();
+  x.shadowBlur=0;
+}
+
+// PARTICLES
+function drawParticle(p,t){
+  x.beginPath();
+  x.arc(p.x,p.y,p.size,0,Math.PI*2);
+  x.fillStyle="rgba(255,240,180,0.6)";
+  x.fill();
+
+  p.y-=p.speed;
+  if(p.y<0){
+    p.y=c.height;
+    p.x=Math.random()*c.width;
+  }
+}
+
+// TREE
+let grow=0;
+function tree(){
+  if(finalPhase) return;
+
+  let cx=c.width/2,base=c.height*0.8,top=c.height*0.5;
+  let ty=base-(base-top)*grow;
+
+  x.lineWidth=22;
+  x.strokeStyle="#7a4a2a";
+  x.beginPath();
+  x.moveTo(cx,base);
+  x.lineTo(cx,ty);
+  x.stroke();
+}
+
+// ANIMATION
+function anim(t){
+  bg();
+
+  if(grow<1) grow+=0.01;
+
+  tree();
+
+  leaves.forEach(l=>{
+    if(grow>0.6) drawLeaf(l,t);
+  });
+
+  particles.forEach(p=>drawParticle(p,t));
+
+  requestAnimationFrame(anim);
+}
+
+// TEXT
+const msgs=[
+ "Hey you 💕",
+ "Happy Birthday 🎂",
+ "You make everything brighter ✨",
+ "Every moment with you matters 💖",
+ "This little world is for you 🌸"
+];
+
+function showText(){
+  const box=document.getElementById("box");
+
+  msgs.forEach((m,i)=>{
+    setTimeout(()=>{
+      let d=document.createElement("div");
+      d.textContent=m;
+      box.appendChild(d);
+    },i*2500);
+  });
+
+  setTimeout(()=>{
+    document.getElementById("finalBtn").style.opacity=1;
+  }, msgs.length*2500 + 1500);
+}
+
+// FINAL
+document.getElementById("finalBtn").onclick=()=>{
+  finalPhase=true;
+
+  let final=document.createElement("div");
+
+  final.style.position="fixed";
+  final.style.top="50%";
+  final.style.left="50%";
+  final.style.transform="translate(-50%, -50%)";
+  final.style.fontSize="46px";
+  final.style.textAlign="center";
+  final.style.opacity="0";
+  final.style.transition="all 2s ease";
+
+  final.innerHTML="Happy Birthday<br>Wewe 💕";
+  document.body.appendChild(final);
+
+  setTimeout(()=>{ final.style.opacity=1; },200);
+};
+
+// ✅ FIXED INTRO
+const introEl = document.getElementById("intro");
+
+introEl.onclick = () => {
+  introEl.style.opacity = 0;
+
+  setTimeout(() => {
+    introEl.style.display = "none";
+    anim(0);
+    showText();
+  }, 1200);
+};
 </script>
 
 </body>
