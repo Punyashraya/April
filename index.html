@@ -12,7 +12,6 @@ body {
   font-family:'Segoe UI';
 }
 
-/* INTRO */
 #intro {
   position:fixed; inset:0;
   display:flex; justify-content:center; align-items:center;
@@ -30,7 +29,6 @@ body {
   50% { transform:scale(1.15); }
 }
 
-/* TEXT */
 .message-box{
  position:absolute;
  right:6%;
@@ -43,7 +41,6 @@ body {
  transition:opacity 1s ease;
 }
 
-/* BUTTON */
 #finalBtn{
  position:absolute;
  left:6%;
@@ -61,7 +58,6 @@ body {
  z-index:5;
 }
 
-/* vignette */
 body::after{
  content:"";
  position:fixed;
@@ -75,7 +71,7 @@ body::after{
 <body>
 
 <div id="intro">
-<svg class="heart" id="heart" viewBox="0 0 100 100">
+<svg class="heart" viewBox="0 0 100 100">
 <path d="M50 90 L20 60 A20 20 0 1 1 50 30 A20 20 0 1 1 80 60 Z"
 fill="#4a0f2a" stroke="#ff2e88" stroke-width="2.5"/>
 </svg>
@@ -94,7 +90,8 @@ resize();addEventListener("resize",resize);
 let leaves=[],particles=[],branches=[];
 let finalPhase=false;
 
-// TREE GENERATION
+// ================= BASE =================
+
 function gen(){
   let cx=c.width/2,cy=c.height*0.45;
 
@@ -117,8 +114,7 @@ function gen(){
       ex:lx,ey:ly,
       mx:(cx+lx)/2+(Math.random()*20-10),
       my:(cy+ly)/2,
-      w:0.5+Math.random()*0.4,
-      alpha:0.35+Math.random()*0.2
+      w:0.5+Math.random()*0.4
     });
   }
 
@@ -135,14 +131,12 @@ function gen(){
 }
 gen();
 
-// MOUSE
 let mouse={x:0,y:0};
 addEventListener("mousemove",e=>{
   mouse.x=e.clientX;
   mouse.y=e.clientY;
 });
 
-// BACKGROUND
 function bg(){
   let g=x.createRadialGradient(c.width/2,c.height/2,50,c.width/2,c.height/2,600);
   g.addColorStop(0,"#1a0a1f");
@@ -151,7 +145,6 @@ function bg(){
   x.fillRect(0,0,c.width,c.height);
 }
 
-// HEART LEAF (WITH HOVER)
 function drawLeaf(l,t){
   let float=Math.sin(t*0.002+l.p)*2;
 
@@ -182,80 +175,21 @@ function drawLeaf(l,t){
   x.shadowBlur=0;
 }
 
-// PARTICLES
 function drawParticle(p,t){
-
-  let dx=p.x-mouse.x;
-  let dy=p.y-mouse.y;
-  let dist=Math.sqrt(dx*dx+dy*dy);
-
-  if(dist<100 && dist!==0){
-    let f=(100-dist)*0.02;
-    p.x+=dx/dist*f;
-    p.y+=dy/dist*f;
-  }
-
-  // STAR
-  if(p.type===0){
-    let pulse=Math.sin(t*0.004+p.phase)*0.5+0.5;
-    let s=p.size*(1+pulse*0.5);
-
-    x.beginPath();
-    x.moveTo(p.x, p.y - s);
-
-    for(let i=1;i<5;i++){
-      let a=i*Math.PI*2/5;
-      let r=i%2===0?s:s*0.4;
-      x.lineTo(p.x+Math.sin(a)*r, p.y-Math.cos(a)*r);
-    }
-
-    x.closePath();
-    x.fillStyle="rgba(255,230,140,0.9)";
-    x.shadowBlur=20;
-    x.shadowColor="#ffd166";
-    x.fill();
-    x.shadowBlur=0;
-  }
-
-  // SNOW
-  else if(p.type===1){
-    let s=p.size*1.3;
-    x.strokeStyle="rgba(255,255,255,0.85)";
-    x.lineWidth=1;
-
-    x.beginPath();
-    for(let i=0;i<6;i++){
-      let a=i*Math.PI/3;
-      x.moveTo(p.x,p.y);
-      x.lineTo(p.x+Math.cos(a)*s,p.y+Math.sin(a)*s);
-    }
-    x.stroke();
-  }
-
-  // GLOW
-  else{
-    let pulse=Math.sin(t*0.002+p.phase)*0.5+0.5;
-
-    x.beginPath();
-    x.arc(p.x,p.y,p.size*(0.8+pulse*0.5),0,Math.PI*2);
-    x.fillStyle="rgba(255,240,180,0.5)";
-    x.shadowBlur=30;
-    x.shadowColor="#ffd166";
-    x.fill();
-    x.shadowBlur=0;
-  }
-
   p.y-=p.speed;
-  p.x+=Math.sin(t*0.001+p.phase)*0.25;
-
   if(p.y<0){
     p.y=c.height;
     p.x=Math.random()*c.width;
   }
+
+  x.beginPath();
+  x.arc(p.x,p.y,p.size,0,Math.PI*2);
+  x.fillStyle="rgba(255,240,180,0.5)";
+  x.fill();
 }
 
-// TREE
 let grow=0;
+
 function tree(){
   if(finalPhase) return;
 
@@ -282,7 +216,6 @@ function tree(){
   });
 }
 
-// ANIMATION
 function anim(t){
   bg();
 
@@ -299,7 +232,8 @@ function anim(t){
   requestAnimationFrame(anim);
 }
 
-// TEXT
+// ================= TEXT =================
+
 const msgs=[
  "Hey you 💕",
  "Happy Birthday 🎂",
@@ -316,7 +250,6 @@ function showText(){
       let d=document.createElement("div");
       d.textContent=m;
       box.appendChild(d);
-      d.style.opacity=1;
     },i*2500);
   });
 
@@ -325,16 +258,13 @@ function showText(){
   }, msgs.length*2500 + 1500);
 }
 
-// FINAL PHASE
+// ================= FINAL =================
+
 document.getElementById("finalBtn").onclick=()=>{
   finalPhase=true;
-  leaves=[];
-  branches=[];
 
   const box=document.getElementById("box");
   box.style.opacity=0;
-
-  setTimeout(()=>{ box.innerHTML=""; },1000);
 
   let final=document.createElement("div");
 
@@ -344,570 +274,58 @@ document.getElementById("finalBtn").onclick=()=>{
   final.style.transform="translate(-50%, -50%)";
   final.style.fontSize="46px";
   final.style.color="white";
-  final.style.textAlign="center";
-  final.style.opacity="0";
-  final.style.transition="opacity 2s ease";
-  final.style.textShadow="0 0 25px #ff6fa5, 0 0 60px #ff2e88";
-
   final.innerHTML="Happy Birthday<br>Wewe 💕";
 
   document.body.appendChild(final);
-
-  setTimeout(()=>{ final.style.opacity=1; },200);
-
-  document.getElementById("finalBtn").style.opacity=0;
 };
 
-// INTRO
-document.getElementById("intro").onclick=()=>{
+// ================= SAFE EXTENSIONS =================
+
+let started=false;
+
+const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3");
+
+let petals=[];
+for(let i=0;i<30;i++){
+  petals.push({x:Math.random()*c.width,y:Math.random()*c.height});
+}
+
+function extraRender(){
+  petals.forEach(p=>{
+    x.beginPath();
+    x.arc(p.x,p.y,2,0,Math.PI*2);
+    x.fillStyle="pink";
+    x.fill();
+
+    p.y+=0.3;
+    if(p.y>c.height) p.y=0;
+  });
+
+  requestAnimationFrame(extraRender);
+}
+
+function startExtensions(){
+  music.play().catch(()=>{});
+  extraRender();
+}
+
+// ================= FIXED INTRO =================
+
+const intro = document.getElementById("intro");
+
+intro.onclick=()=>{
+
+  if(started) return;
+  started=true;
+
   intro.style.opacity=0;
+
   setTimeout(()=>{
     intro.style.display="none";
     anim(0);
     showText();
+    startExtensions();
   },1200);
-};
-  // ===============================
-// 🌟 V3 EXTENSION LAYER (ADD ONLY)
-// ===============================
-
-// 🎵 MUSIC
-const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3");
-music.loop = true;
-music.volume = 0.4;
-
-document.getElementById("intro").addEventListener("click", () => {
-  music.play().catch(()=>{});
-});
-
-// 🌸 PETALS (separate layer)
-let petals = [];
-for(let i=0;i<40;i++){
-  petals.push({
-    x:Math.random()*c.width,
-    y:Math.random()*c.height,
-    size:Math.random()*4+2,
-    speed:Math.random()*0.5+0.2,
-    drift:Math.random()*2-1
-  });
-}
-
-function drawPetals(){
-  petals.forEach(p=>{
-    x.beginPath();
-    x.ellipse(p.x,p.y,p.size,p.size*0.6,0,0,Math.PI*2);
-    x.fillStyle="rgba(255,170,190,0.5)";
-    x.fill();
-
-    p.y+=p.speed;
-    p.x+=p.drift;
-
-    if(p.y>c.height){
-      p.y=0;
-      p.x=Math.random()*c.width;
-    }
-  });
-}
-
-// 💫 PARALLAX CAMERA
-let cam = {x:0,y:0};
-addEventListener("mousemove",e=>{
-  cam.x = (e.clientX - innerWidth/2) * 0.01;
-  cam.y = (e.clientY - innerHeight/2) * 0.01;
-});
-
-// 📱 TOUCH SUPPORT
-addEventListener("touchmove",e=>{
-  mouse.x = e.touches[0].clientX;
-  mouse.y = e.touches[0].clientY;
-});
-
-// 🌙 DAY → NIGHT SHIFT
-let dayProgress = 0;
-function dayNight(){
-  if(dayProgress < 1) dayProgress += 0.0005;
-
-  let overlay = document.getElementById("dayOverlay");
-  if(!overlay){
-    overlay = document.createElement("div");
-    overlay.id = "dayOverlay";
-    overlay.style.position="fixed";
-    overlay.style.inset="0";
-    overlay.style.pointerEvents="none";
-    document.body.appendChild(overlay);
-  }
-
-  overlay.style.background =
-    `linear-gradient(rgba(255,180,150,${0.2*(1-dayProgress)}), rgba(10,10,30,${dayProgress*0.6}))`;
-}
-
-// 💌 HIDDEN NOTES
-const notes = [
- "I love you 💕",
- "You are my favorite person 🌸",
- "Forever yours 💖"
-];
-
-for(let i=0;i<3;i++){
-  let n=document.createElement("div");
-  n.innerText="💖";
-  n.style.position="fixed";
-  n.style.left=(20+i*60)+"%";
-  n.style.top="80%";
-  n.style.cursor="pointer";
-  n.style.fontSize="22px";
-
-  n.onclick=()=>{
-    alert(notes[i]);
-  };
-
-  document.body.appendChild(n);
-}
-
-// 🌪️ PARTICLE SWIRL INTO FINAL TEXT
-function swirlToCenter(){
-  let cx=innerWidth/2, cy=innerHeight/2;
-
-  particles.forEach(p=>{
-    let dx=cx-p.x;
-    let dy=cy-p.y;
-
-    p.x += dx*0.03;
-    p.y += dy*0.03;
-  });
-}
-
-// 🧠 PATCH ANIMATION LOOP (WITHOUT MODIFYING BASE)
-
-const originalAnim = anim;
-
-anim = function(t){
-
-  // apply parallax
-  x.save();
-  x.translate(cam.x, cam.y);
-
-  originalAnim(t);
-
-  x.restore();
-
-  // overlays
-  drawPetals();
-  dayNight();
-
-  // swirl only in final phase
-  if(finalPhase){
-    swirlToCenter();
-  }
-};
-  // ===============================
-// 💓 HEARTBEAT SYNC
-// ===============================
-
-const heartbeat = new Audio("https://cdn.pixabay.com/download/audio/2022/03/10/audio_3d2b9f7c1a.mp3");
-heartbeat.volume = 0.25;
-
-let beatTimer = 0;
-
-function playHeartbeat(){
-  heartbeat.currentTime = 0;
-  heartbeat.play().catch(()=>{});
-}
-
-// trigger after intro
-document.getElementById("intro").addEventListener("click", ()=>{
-  setTimeout(()=>{
-    playHeartbeat();
-  }, 1200);
-});
-
-// sync with animation
-const originalAnim2 = anim;
-
-anim = function(t){
-
-  originalAnim2(t);
-
-  // 💓 heartbeat rhythm
-  beatTimer += 0.016;
-
-  let interval = finalPhase ? 0.6 : 1; // faster at end
-
-  if(beatTimer > interval){
-    playHeartbeat();
-    beatTimer = 0;
-  }
-};
-
-// ===============================
-// 💌 ENHANCED HIDDEN MESSAGES
-// ===============================
-
-const hiddenMessages = [
-  "You're my peace 💖",
-  "I adore you 🌸",
-  "You make life magical ✨",
-  "Always you 💕",
-  "My favorite person 💫",
-  "You mean everything 💖"
-];
-
-function createSparkle(xPos, yPos, msg){
-
-  let el = document.createElement("div");
-
-  el.innerText = "✦";
-  el.style.position = "fixed";
-  el.style.left = xPos;
-  el.style.top = yPos;
-  el.style.fontSize = "16px";
-  el.style.color = "rgba(255,220,180,0.7)";
-  el.style.cursor = "pointer";
-  el.style.opacity = "0.3";
-  el.style.transition = "all 0.6s ease";
-  el.style.textShadow = "0 0 8px rgba(255,200,150,0.5)";
-
-  // ✨ subtle floating animation
-  let floatOffset = Math.random()*20;
-
-  setInterval(()=>{
-    el.style.transform = `translateY(${Math.sin(Date.now()*0.001 + floatOffset)*5}px)`;
-  },30);
-
-  // ✨ shimmer effect
-  setInterval(()=>{
-    el.style.opacity = 0.2 + Math.random()*0.5;
-  },800);
-
-  // 💌 click interaction
-  el.onclick = ()=>{
-    let note = document.createElement("div");
-
-    note.innerText = msg;
-    note.style.position = "fixed";
-    note.style.top = "50%";
-    note.style.left = "50%";
-    note.style.transform = "translate(-50%,-50%)";
-    note.style.fontSize = "22px";
-    note.style.color = "#fff";
-    note.style.padding = "10px 20px";
-    note.style.borderRadius = "20px";
-    note.style.background = "rgba(255,120,160,0.2)";
-    note.style.backdropFilter = "blur(10px)";
-    note.style.textShadow = "0 0 10px rgba(255,150,200,0.6)";
-    note.style.opacity = "0";
-    note.style.transition = "opacity 0.6s ease";
-
-    document.body.appendChild(note);
-
-    setTimeout(()=> note.style.opacity=1, 50);
-
-    setTimeout(()=>{
-      note.style.opacity=0;
-      setTimeout(()=> note.remove(),600);
-    },2500);
-  };
-
-  document.body.appendChild(el);
-}
-
-// scatter sparkles (hidden)
-setTimeout(()=>{
-  for(let i=0;i<hiddenMessages.length;i++){
-
-    createSparkle(
-      Math.random()*80 + 10 + "%",
-      Math.random()*70 + 15 + "%",
-      hiddenMessages[i]
-    );
-  }
-}, 4000);
-  // ===============================
-// 💓 VISUAL HEARTBEAT SYNC
-// ===============================
-
-let beatPulse = 0;
-let beatGlow = 0;
-
-// hook into heartbeat trigger
-const originalPlayHeartbeat = playHeartbeat;
-
-playHeartbeat = function(){
-  originalPlayHeartbeat();
-
-  // trigger visual pulse
-  beatPulse = 1;
-  beatGlow = 1;
-};
-
-// 🌳 override leaf rendering (ADD effect without breaking base)
-const originalDrawLeaf = drawLeaf;
-
-drawLeaf = function(l,t){
-
-  // scale pulse
-  let pulseScale = 1 + (beatPulse * 0.25);
-
-  let originalSize = l.s;
-  l.s = originalSize * pulseScale;
-
-  originalDrawLeaf(l,t);
-
-  l.s = originalSize;
-};
-
-// 🌌 screen glow overlay
-let glowLayer = document.createElement("div");
-glowLayer.style.position = "fixed";
-glowLayer.style.inset = "0";
-glowLayer.style.pointerEvents = "none";
-glowLayer.style.zIndex = "3";
-document.body.appendChild(glowLayer);
-
-// 🎬 extend animation safely
-const originalAnim3 = anim;
-
-anim = function(t){
-
-  originalAnim3(t);
-
-  // decay pulse
-  beatPulse *= 0.92;
-  beatGlow *= 0.9;
-
-  // ✨ glow flash
-  glowLayer.style.background =
-    `radial-gradient(circle at center,
-      rgba(255,120,160,${0.15 * beatGlow}),
-      transparent 60%)`;
-
-  // ✨ boost particles glow subtly
-  particles.forEach(p=>{
-    if(beatGlow > 0.1){
-      p.size *= (1 + beatGlow * 0.02);
-    }
-  });
-};
-  // ===============================
-// 💓 FIX PARTICLE GROWTH BUG
-// ===============================
-
-// store original size once
-particles.forEach(p=>{
-  if(!p.baseSize){
-    p.baseSize = p.size;
-  }
-});
-
-// override particle rendering safely
-const originalDrawParticle = drawParticle;
-
-drawParticle = function(p,t){
-
-  // ensure base size exists
-  if(!p.baseSize) p.baseSize = p.size;
-
-  // apply temporary pulse (no permanent growth)
-  let scale = 1 + (beatGlow * 0.25);
-  let originalSize = p.size;
-
-  p.size = p.baseSize * scale;
-
-  originalDrawParticle(p,t);
-
-  // restore size (critical fix)
-  p.size = originalSize;
-};
-  // ===============================
-// 🌟 V4 CINEMATIC ADD-ON (SAFE)
-// ===============================
-
-// ✨ SPARKLE HIDDEN MESSAGES (CLEAN VERSION)
-const hiddenMessages = [
-  "You're my peace 💖",
-  "I adore you 🌸",
-  "You make life magical ✨",
-  "Always you 💕",
-  "My favorite person 💫"
-];
-
-function createSparkle(x, y, msg){
-
-  let el = document.createElement("div");
-
-  el.innerText = "✦";
-  el.style.position = "fixed";
-  el.style.left = x;
-  el.style.top = y;
-  el.style.fontSize = "14px";
-  el.style.color = "rgba(255,220,180,0.7)";
-  el.style.cursor = "pointer";
-  el.style.opacity = "0.4";
-  el.style.transition = "0.5s";
-
-  // floating motion
-  let offset = Math.random()*10;
-
-  setInterval(()=>{
-    el.style.transform =
-      `translateY(${Math.sin(Date.now()*0.001 + offset)*6}px)`;
-  },30);
-
-  // shimmer
-  setInterval(()=>{
-    el.style.opacity = 0.2 + Math.random()*0.5;
-  },800);
-
-  // click message
-  el.onclick = ()=>{
-    let note = document.createElement("div");
-
-    note.innerText = msg;
-    note.style.position = "fixed";
-    note.style.top = "50%";
-    note.style.left = "50%";
-    note.style.transform = "translate(-50%,-50%)";
-    note.style.padding = "12px 20px";
-    note.style.borderRadius = "20px";
-    note.style.background = "rgba(255,120,160,0.25)";
-    note.style.backdropFilter = "blur(10px)";
-    note.style.color = "#fff";
-    note.style.fontSize = "20px";
-    note.style.opacity = "0";
-    note.style.transition = "0.5s";
-
-    document.body.appendChild(note);
-
-    setTimeout(()=> note.style.opacity=1, 50);
-
-    setTimeout(()=>{
-      note.style.opacity=0;
-      setTimeout(()=>note.remove(),500);
-    },2000);
-  };
-
-  document.body.appendChild(el);
-}
-
-// scatter sparkles AFTER intro
-document.getElementById("intro").addEventListener("click", ()=>{
-  setTimeout(()=>{
-    for(let i=0;i<hiddenMessages.length;i++){
-      createSparkle(
-        Math.random()*80 + 10 + "%",
-        Math.random()*70 + 15 + "%",
-        hiddenMessages[i]
-      );
-    }
-  },3000);
-});
-
-
-// 🌠 PARTICLE TRAILS (SAFE — NO CORE TOUCH)
-let trails = [];
-
-function addTrail(x,y){
-  trails.push({x,y,life:1});
-}
-
-function drawTrails(){
-  trails.forEach(t=>{
-    x.beginPath();
-    x.arc(t.x,t.y,2,0,Math.PI*2);
-    x.fillStyle = `rgba(255,200,150,${t.life})`;
-    x.fill();
-    t.life *= 0.92;
-  });
-
-  trails = trails.filter(t=>t.life>0.05);
-}
-
-// hook into render loop safely
-const oldExtraRender = extraRender;
-
-extraRender = function(t){
-
-  oldExtraRender(t);
-
-  // add trails from particles
-  particles.forEach(p=>{
-    addTrail(p.x, p.y);
-  });
-
-  drawTrails();
-};
-
-
-// 💖 FINAL TEXT CINEMATIC UPGRADE (SAFE OBSERVER)
-
-const observer = new MutationObserver(()=>{
-
-  const el = Array.from(document.body.children)
-    .find(e => e.innerHTML && e.innerHTML.includes("Happy Birthday"));
-
-  if(!el || el._done) return;
-  el._done = true;
-
-  el.style.fontWeight = "600";
-  el.style.letterSpacing = "1px";
-  el.style.transition = "all 1.5s ease";
-
-  let t = 0;
-
-  function animateText(){
-
-    t += 0.02;
-
-    let scale = 1 + Math.sin(t)*0.03;
-    let float = Math.sin(t*0.8)*6;
-    let glow = 20 + Math.sin(t*2)*15;
-
-    el.style.transform =
-      `translate(-50%, calc(-50% + ${float}px)) scale(${scale})`;
-
-    el.style.textShadow =
-      `0 0 ${glow}px rgba(255,120,160,0.7),
-       0 0 ${glow*2}px rgba(255,80,140,0.5)`;
-
-    requestAnimationFrame(animateText);
-  }
-
-  animateText();
-});
-
-observer.observe(document.body, {childList:true});
-
-
-// 💓 SOFT HEARTBEAT VISUAL (NO AUDIO CONFLICT)
-let beat = 0;
-
-function heartbeatVisual(){
-  beat = 1;
-}
-
-// trigger on button + random rhythm
-document.getElementById("finalBtn")
-  .addEventListener("click", heartbeatVisual);
-
-setInterval(()=>{
-  if(Math.random() < 0.3){
-    heartbeatVisual();
-  }
-},1500);
-
-// enhance glow from heartbeat
-const oldGlowRender = extraRender;
-
-extraRender = function(t){
-
-  oldGlowRender(t);
-
-  beat *= 0.9;
-
-  glowLayer.style.background =
-    `radial-gradient(circle at center,
-      rgba(255,120,160,${0.15 * beat}),
-      transparent 60%)`;
 };
 </script>
 
