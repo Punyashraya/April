@@ -840,11 +840,12 @@ loop = function(t){
   // ⏳ TIME EVOLUTION
   wind.strength = 0.2 + Math.sin(t*0.0005)*0.15;
 };
-  // ===============================
-// 💖 CINEMATIC FINAL TEXT UPGRADE
-// ===============================
 
 // observe when final text appears
+// ===============================
+// 💖 CINEMATIC FINAL TEXT UPGRADE (ALIVE VERSION)
+// ===============================
+
 const observer = new MutationObserver(() => {
 
   const finalText = Array.from(document.body.children)
@@ -854,35 +855,97 @@ const observer = new MutationObserver(() => {
 
   finalText._enhanced = true;
 
-  // 🎬 base styling upgrade
+  // base style
   finalText.style.fontWeight = "600";
   finalText.style.letterSpacing = "1px";
   finalText.style.lineHeight = "1.3";
 
-  // initial state (for animation)
+  // initial cinematic state
   finalText.style.opacity = "0";
   finalText.style.transform = "translate(-50%, -40%) scale(0.9)";
   finalText.style.filter = "blur(8px)";
 
-  // 🌟 layered glow
+  // gradient text
+  finalText.style.background = "linear-gradient(90deg,#ff8fa3,#ffd1dc,#ff8fa3)";
+  finalText.style.backgroundSize = "200% 100%";
+  finalText.style.webkitBackgroundClip = "text";
+  finalText.style.webkitTextFillColor = "transparent";
+
+  // glow
   finalText.style.textShadow = `
     0 0 10px rgba(255,120,160,0.6),
     0 0 25px rgba(255,120,160,0.5),
     0 0 60px rgba(255,80,140,0.4)
   `;
 
-  // ✨ gradient text effect
-  finalText.style.background = "linear-gradient(90deg,#ff8fa3,#ffd1dc,#ff8fa3)";
-  finalText.style.webkitBackgroundClip = "text";
-  finalText.style.webkitTextFillColor = "transparent";
-
-  // 🎬 entrance animation
+  // entrance
   requestAnimationFrame(()=>{
     finalText.style.transition = "all 2s cubic-bezier(.2,.8,.2,1)";
     finalText.style.opacity = "1";
     finalText.style.transform = "translate(-50%, -50%) scale(1)";
     finalText.style.filter = "blur(0px)";
   });
+
+  // 🌊 animation loop
+  let t = 0;
+
+  function animateText(){
+    t += 0.02;
+
+    // breathing scale
+    let scale = 1 + Math.sin(t) * 0.025;
+
+    // floating
+    let floatY = Math.sin(t * 0.8) * 6;
+
+    // glow pulse (syncs nicely with heartbeat visually)
+    let glow = 20 + Math.sin(t * 2) * 15;
+
+    // shimmer gradient movement
+    let bgPos = (t * 40) % 200;
+
+    // apply
+    finalText.style.transform =
+      `translate(-50%, calc(-50% + ${floatY}px)) scale(${scale})`;
+
+    finalText.style.textShadow = `
+      0 0 ${glow}px rgba(255,120,160,0.6),
+      0 0 ${glow*2}px rgba(255,80,140,0.4)
+    `;
+
+    finalText.style.backgroundPosition = `${bgPos}% 50%`;
+
+    // subtle letter spacing animation
+    finalText.style.letterSpacing =
+      `${1 + Math.sin(t*0.5) * 0.5}px`;
+
+    requestAnimationFrame(animateText);
+  }
+
+  animateText();
+
+  // 💫 particles attracted to text center (VERY subtle)
+  function pullParticles(){
+    let rect = finalText.getBoundingClientRect();
+    let cx = rect.left + rect.width/2;
+    let cy = rect.top + rect.height/2;
+
+    particles.forEach(p=>{
+      let dx = cx - p.x;
+      let dy = cy - p.y;
+
+      p.x += dx * 0.002;
+      p.y += dy * 0.002;
+    });
+
+    requestAnimationFrame(pullParticles);
+  }
+
+  pullParticles();
+});
+
+// start observing
+observer.observe(document.body, { childList: true });
 
   // 💓 breathing + shimmer loop
   let t = 0;
