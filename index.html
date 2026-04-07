@@ -977,6 +977,35 @@ tree = function(){
     x.stroke();
   });
 };
+  // ===============================
+// 🌿 HARD FIX: STOP LEAF DRIFT
+// ===============================
+
+// store original positions ONCE
+leaves.forEach(l=>{
+  if(l.baseX === undefined){
+    l.baseX = l.x;
+    l.baseY = l.y;
+  }
+});
+
+// override leaf rendering SAFELY
+const stableDrawLeaf = drawLeaf;
+
+drawLeaf = function(l,t){
+
+  // ALWAYS reset to original anchor
+  l.x = l.baseX;
+  l.y = l.baseY;
+
+  // apply wind VISUALLY ONLY (no permanent drift)
+  if(typeof wind !== "undefined"){
+    l.x += Math.cos(wind.angle) * wind.strength * 2;
+    l.y += Math.sin(wind.angle) * wind.strength * 1;
+  }
+
+  stableDrawLeaf(l,t);
+};
 </script>
 
 </body>
