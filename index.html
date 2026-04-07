@@ -718,6 +718,197 @@ drawParticle = function(p,t){
   // restore size (critical fix)
   p.size = originalSize;
 };
+  // ===============================
+// 🌟 V4 CINEMATIC ADD-ON (SAFE)
+// ===============================
+
+// ✨ SPARKLE HIDDEN MESSAGES (CLEAN VERSION)
+const hiddenMessages = [
+  "You're my peace 💖",
+  "I adore you 🌸",
+  "You make life magical ✨",
+  "Always you 💕",
+  "My favorite person 💫"
+];
+
+function createSparkle(x, y, msg){
+
+  let el = document.createElement("div");
+
+  el.innerText = "✦";
+  el.style.position = "fixed";
+  el.style.left = x;
+  el.style.top = y;
+  el.style.fontSize = "14px";
+  el.style.color = "rgba(255,220,180,0.7)";
+  el.style.cursor = "pointer";
+  el.style.opacity = "0.4";
+  el.style.transition = "0.5s";
+
+  // floating motion
+  let offset = Math.random()*10;
+
+  setInterval(()=>{
+    el.style.transform =
+      `translateY(${Math.sin(Date.now()*0.001 + offset)*6}px)`;
+  },30);
+
+  // shimmer
+  setInterval(()=>{
+    el.style.opacity = 0.2 + Math.random()*0.5;
+  },800);
+
+  // click message
+  el.onclick = ()=>{
+    let note = document.createElement("div");
+
+    note.innerText = msg;
+    note.style.position = "fixed";
+    note.style.top = "50%";
+    note.style.left = "50%";
+    note.style.transform = "translate(-50%,-50%)";
+    note.style.padding = "12px 20px";
+    note.style.borderRadius = "20px";
+    note.style.background = "rgba(255,120,160,0.25)";
+    note.style.backdropFilter = "blur(10px)";
+    note.style.color = "#fff";
+    note.style.fontSize = "20px";
+    note.style.opacity = "0";
+    note.style.transition = "0.5s";
+
+    document.body.appendChild(note);
+
+    setTimeout(()=> note.style.opacity=1, 50);
+
+    setTimeout(()=>{
+      note.style.opacity=0;
+      setTimeout(()=>note.remove(),500);
+    },2000);
+  };
+
+  document.body.appendChild(el);
+}
+
+// scatter sparkles AFTER intro
+document.getElementById("intro").addEventListener("click", ()=>{
+  setTimeout(()=>{
+    for(let i=0;i<hiddenMessages.length;i++){
+      createSparkle(
+        Math.random()*80 + 10 + "%",
+        Math.random()*70 + 15 + "%",
+        hiddenMessages[i]
+      );
+    }
+  },3000);
+});
+
+
+// 🌠 PARTICLE TRAILS (SAFE — NO CORE TOUCH)
+let trails = [];
+
+function addTrail(x,y){
+  trails.push({x,y,life:1});
+}
+
+function drawTrails(){
+  trails.forEach(t=>{
+    x.beginPath();
+    x.arc(t.x,t.y,2,0,Math.PI*2);
+    x.fillStyle = `rgba(255,200,150,${t.life})`;
+    x.fill();
+    t.life *= 0.92;
+  });
+
+  trails = trails.filter(t=>t.life>0.05);
+}
+
+// hook into render loop safely
+const oldExtraRender = extraRender;
+
+extraRender = function(t){
+
+  oldExtraRender(t);
+
+  // add trails from particles
+  particles.forEach(p=>{
+    addTrail(p.x, p.y);
+  });
+
+  drawTrails();
+};
+
+
+// 💖 FINAL TEXT CINEMATIC UPGRADE (SAFE OBSERVER)
+
+const observer = new MutationObserver(()=>{
+
+  const el = Array.from(document.body.children)
+    .find(e => e.innerHTML && e.innerHTML.includes("Happy Birthday"));
+
+  if(!el || el._done) return;
+  el._done = true;
+
+  el.style.fontWeight = "600";
+  el.style.letterSpacing = "1px";
+  el.style.transition = "all 1.5s ease";
+
+  let t = 0;
+
+  function animateText(){
+
+    t += 0.02;
+
+    let scale = 1 + Math.sin(t)*0.03;
+    let float = Math.sin(t*0.8)*6;
+    let glow = 20 + Math.sin(t*2)*15;
+
+    el.style.transform =
+      `translate(-50%, calc(-50% + ${float}px)) scale(${scale})`;
+
+    el.style.textShadow =
+      `0 0 ${glow}px rgba(255,120,160,0.7),
+       0 0 ${glow*2}px rgba(255,80,140,0.5)`;
+
+    requestAnimationFrame(animateText);
+  }
+
+  animateText();
+});
+
+observer.observe(document.body, {childList:true});
+
+
+// 💓 SOFT HEARTBEAT VISUAL (NO AUDIO CONFLICT)
+let beat = 0;
+
+function heartbeatVisual(){
+  beat = 1;
+}
+
+// trigger on button + random rhythm
+document.getElementById("finalBtn")
+  .addEventListener("click", heartbeatVisual);
+
+setInterval(()=>{
+  if(Math.random() < 0.3){
+    heartbeatVisual();
+  }
+},1500);
+
+// enhance glow from heartbeat
+const oldGlowRender = extraRender;
+
+extraRender = function(t){
+
+  oldGlowRender(t);
+
+  beat *= 0.9;
+
+  glowLayer.style.background =
+    `radial-gradient(circle at center,
+      rgba(255,120,160,${0.15 * beat}),
+      transparent 60%)`;
+};
 </script>
 
 </body>
