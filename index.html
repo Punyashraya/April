@@ -909,6 +909,70 @@ const observer = new MutationObserver(() => {
 
 // start observing DOM
 observer.observe(document.body, { childList: true });
+  // ===============================
+// 🌿 SAFE BRANCH → LEAF ATTACH FIX (NO WIND)
+// ===============================
+
+// get EXACT rendered leaf position (matches your drawLeaf)
+function getLeafRenderPos(l, t){
+  let float = Math.sin(t*0.002 + l.p) * 2;
+
+  let dx = l.x - mouse.x;
+  let dy = l.y - mouse.y;
+  let dist = Math.sqrt(dx*dx + dy*dy);
+
+  let xPos = l.x;
+  let yPos = l.y + float;
+
+  if(dist < 120 && dist !== 0){
+    let force = (120 - dist) * 0.05;
+    xPos += dx/dist * force;
+    yPos += dy/dist * force;
+  }
+
+  return { x: xPos, y: yPos };
+}
+
+// override tree drawing ONLY (no other behavior touched)
+const originalTree = tree;
+
+tree = function(){
+
+  if(finalPhase) return;
+
+  let cx = c.width/2,
+      base = c.height*0.8,
+      top = c.height*0.5;
+
+  let ty = base - (base - top) * grow;
+
+  // trunk (unchanged)
+  x.lineWidth = 22;
+  x.strokeStyle = "#7a4a2a";
+  x.beginPath();
+  x.moveTo(cx, base);
+  x.lineTo(cx, ty);
+  x.stroke();
+
+  // branches now FOLLOW rendered leaf positions
+  branches.forEach((b, i)=>{
+
+    let l = leaves[i];
+    if(!l) return;
+
+    let leafPos = getLeafRenderPos(l, performance.now());
+
+    let ex = cx + (leafPos.x - cx) * grow;
+    let ey = ty + (leafPos.y - ty) * grow;
+
+    x.beginPath();
+    x.lineWidth = b.w;
+    x.strokeStyle = "rgba(200,140,90,0.5)";
+    x.moveTo(cx, ty);
+    x.quadraticCurveTo(b.mx, b.my, ex, ey);
+    x.stroke();
+  });
+};
 </script>
 
 </body>
