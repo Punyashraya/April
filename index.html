@@ -1011,6 +1011,167 @@ function animateParticleText(){
 
   loop();
 }
+  // ===============================
+// 🌌 CINEMATIC PARTICLE TEXT SYSTEM
+// ===============================
+
+document.getElementById("finalBtn").addEventListener("click", ()=>{
+
+  setTimeout(()=>{
+
+    let finalText;
+
+    const wait = setInterval(()=>{
+      finalText = Array.from(document.body.children)
+        .find(el => el.innerHTML && el.innerHTML.includes("Happy Birthday"));
+
+      if(finalText){
+        clearInterval(wait);
+        particleTextForm(finalText);
+      }
+    },50);
+
+  },300);
+
+});
+
+
+// ===============================
+// ✨ TEXT → TARGET POINTS
+// ===============================
+
+function particleTextForm(el){
+
+  const tempCanvas = document.createElement("canvas");
+  const ctx = tempCanvas.getContext("2d");
+
+  tempCanvas.width = innerWidth;
+  tempCanvas.height = innerHeight;
+
+  ctx.fillStyle = "white";
+  ctx.font = "bold 80px Segoe UI";
+  ctx.textAlign = "center";
+
+  ctx.fillText("Happy Birthday", innerWidth/2, innerHeight/2 - 20);
+  ctx.fillText("Wewe 💕", innerWidth/2, innerHeight/2 + 60);
+
+  const data = ctx.getImageData(0,0,tempCanvas.width,tempCanvas.height).data;
+
+  let targets = [];
+
+  for(let y=0;y<tempCanvas.height;y+=5){
+    for(let xPos=0;xPos<tempCanvas.width;xPos+=5){
+
+      let i = (y * tempCanvas.width + xPos) * 4;
+
+      if(data[i+3] > 150){
+        targets.push({x:xPos, y:y});
+      }
+    }
+  }
+
+  el.style.opacity = 0;
+
+  particles.forEach((p,i)=>{
+    let t = targets[i % targets.length];
+
+    p.tx = t.x;
+    p.ty = t.y;
+    p.forming = true;
+    p.locked = false;
+  });
+
+  animateParticleText();
+}
+
+
+// ===============================
+// 🎬 MASTER ANIMATION STATES
+// ===============================
+
+let particlePhase = "forming";
+let phaseTimer = 0;
+
+function animateParticleText(){
+
+  function loop(){
+
+    phaseTimer += 0.016;
+
+    particles.forEach(p=>{
+
+      if(p.forming){
+
+        let dx = p.tx - p.x;
+        let dy = p.ty - p.y;
+
+        p.x += dx * 0.08;
+        p.y += dy * 0.08;
+
+        if(Math.abs(dx)+Math.abs(dy) < 1){
+          p.locked = true;
+        }
+
+      }
+
+      // 💓 LOCKED → PULSE + SHIMMER
+      if(p.locked){
+
+        // heartbeat pulse
+        let pulse = 1 + Math.sin(Date.now()*0.01)*0.3;
+        p.size = (p.baseSize || p.size) * pulse * 1.8;
+
+        // shimmer drift
+        p.x += Math.sin(Date.now()*0.002 + p.phase)*0.2;
+        p.y += Math.cos(Date.now()*0.002 + p.phase)*0.2;
+      }
+
+      // 🕊️ DISPERSAL
+      if(particlePhase === "disperse"){
+
+        p.locked = false;
+
+        let angle = Math.atan2(p.y - innerHeight/2, p.x - innerWidth/2);
+
+        p.x += Math.cos(angle) * 2 + (Math.random()-0.5)*2;
+        p.y += Math.sin(angle) * 2 + (Math.random()-0.5)*2;
+
+        p.size *= 0.98;
+      }
+
+    });
+
+    // ===============================
+    // ⏳ PHASE CONTROL
+    // ===============================
+
+    if(particlePhase === "forming" && phaseTimer > 3){
+      particlePhase = "hold";
+      phaseTimer = 0;
+    }
+
+    if(particlePhase === "hold" && phaseTimer > 3){
+      particlePhase = "disperse";
+      phaseTimer = 0;
+    }
+
+    if(particlePhase === "disperse" && phaseTimer > 3){
+      particlePhase = "forming";
+      phaseTimer = 0;
+
+      // reassign targets again (loop)
+      particles.forEach(p=>{
+        if(p.tx && p.ty){
+          p.forming = true;
+        }
+      });
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
 </script>
 
 </body>
