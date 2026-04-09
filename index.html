@@ -900,6 +900,117 @@ function attractParticlesToCenter(){
 
   loop();
 }
+  //new
+  // ===============================
+// 🌌 PARTICLE TEXT FORMATION (SAFE ADD-ON)
+// ===============================
+
+document.getElementById("finalBtn").addEventListener("click", ()=>{
+
+  // wait for your base final text to appear
+  setTimeout(()=>{
+
+    let finalText;
+
+    const wait = setInterval(()=>{
+      finalText = Array.from(document.body.children)
+        .find(el => el.innerHTML && el.innerHTML.includes("Happy Birthday"));
+
+      if(finalText){
+        clearInterval(wait);
+        particleTextForm(finalText);
+      }
+    },50);
+
+  },300);
+
+});
+
+
+// ===============================
+// ✨ CONVERT TEXT → PARTICLE TARGET
+// ===============================
+
+function particleTextForm(el){
+
+  // create hidden canvas to read text pixels
+  const tempCanvas = document.createElement("canvas");
+  const ctx = tempCanvas.getContext("2d");
+
+  tempCanvas.width = innerWidth;
+  tempCanvas.height = innerHeight;
+
+  // draw text
+  ctx.fillStyle = "white";
+  ctx.font = "bold 80px Segoe UI";
+  ctx.textAlign = "center";
+
+  ctx.fillText("Happy Birthday", innerWidth/2, innerHeight/2 - 20);
+  ctx.fillText("Wewe 💕", innerWidth/2, innerHeight/2 + 60);
+
+  const data = ctx.getImageData(0,0,tempCanvas.width,tempCanvas.height).data;
+
+  let targets = [];
+
+  // scan pixels → create target points
+  for(let y=0;y<tempCanvas.height;y+=6){
+    for(let xPos=0;xPos<tempCanvas.width;xPos+=6){
+
+      let i = (y * tempCanvas.width + xPos) * 4;
+
+      if(data[i+3] > 150){ // visible pixel
+        targets.push({x:xPos, y:y});
+      }
+    }
+  }
+
+  // hide original text
+  el.style.opacity = 0;
+
+  // assign particles to targets
+  for(let i=0;i<particles.length;i++){
+
+    let t = targets[i % targets.length];
+
+    particles[i].tx = t.x;
+    particles[i].ty = t.y;
+    particles[i].forming = true;
+  }
+
+  // start animation
+  animateParticleText();
+}
+
+
+// ===============================
+// 🎬 PARTICLE FORM ANIMATION
+// ===============================
+
+function animateParticleText(){
+
+  function loop(){
+
+    particles.forEach(p=>{
+
+      if(p.forming){
+
+        let dx = p.tx - p.x;
+        let dy = p.ty - p.y;
+
+        // smooth easing
+        p.x += dx * 0.08;
+        p.y += dy * 0.08;
+
+        // glow boost
+        p.size = (p.baseSize || p.size) * 1.5;
+      }
+    });
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
 </script>
 
 </body>
