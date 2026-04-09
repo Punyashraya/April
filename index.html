@@ -1343,6 +1343,199 @@ anim = function(t){
   updateTouchEffect();
   drawRipples();
 };
+  // ===============================
+// 🔥 INSANE CINEMATIC FINAL LAYER
+// ===============================
+
+let insanePhase = "idle";
+let insaneTimer = 0;
+let finalElementRef = null;
+
+// hook safely
+document.getElementById("finalBtn").addEventListener("click", ()=>{
+
+  setTimeout(()=>{
+
+    insanePhase = "forming";
+    insaneTimer = 0;
+
+    // detect final text
+    let check = setInterval(()=>{
+      let el = Array.from(document.body.children)
+        .find(e => e.innerHTML && e.innerHTML.includes("Happy Birthday"));
+
+      if(el){
+        clearInterval(check);
+        finalElementRef = el;
+        upgradeFinalText(el);
+      }
+    },50);
+
+  },1200);
+
+});
+
+
+// ===============================
+// 💎 UPGRADE FINAL TEXT STYLE
+// ===============================
+
+function upgradeFinalText(el){
+
+  // hide original look
+  el.style.color="transparent";
+
+  // fancy gradient text
+  el.style.background = "linear-gradient(120deg,#ff8fa3,#ffd1dc,#fff,#ff8fa3)";
+  el.style.backgroundSize = "300% 100%";
+  el.style.webkitBackgroundClip = "text";
+  el.style.webkitTextFillColor = "transparent";
+
+  el.style.fontWeight="700";
+  el.style.letterSpacing="2px";
+
+  // glow
+  el.style.textShadow = `
+    0 0 10px rgba(255,120,160,0.6),
+    0 0 30px rgba(255,80,140,0.4),
+    0 0 80px rgba(255,50,120,0.3)
+  `;
+
+  // shimmer animation
+  let t=0;
+  function shimmer(){
+    t+=0.02;
+    el.style.backgroundPosition = `${(t*60)%300}% 50%`;
+    requestAnimationFrame(shimmer);
+  }
+  shimmer();
+}
+
+
+// ===============================
+// 🌌 PARTICLE CONTROL ENGINE
+// ===============================
+
+function insaneLoop(){
+
+  insaneTimer += 0.016;
+
+  // FORM → HOLD → DISSOLVE
+  if(insanePhase === "forming" && insaneTimer > 3){
+    insanePhase = "hold";
+    insaneTimer = 0;
+  }
+
+  if(insanePhase === "hold" && insaneTimer > 3){
+    insanePhase = "dissolve";
+    insaneTimer = 0;
+  }
+
+  if(insanePhase === "dissolve" && insaneTimer > 2){
+    insanePhase = "finalText";
+    insaneTimer = 0;
+    finalizeScene();
+  }
+
+  particles.forEach(p=>{
+
+    // 💓 FORMING
+    if(insanePhase === "forming" && p.tx){
+      let dx = p.tx - p.x;
+      let dy = p.ty - p.y;
+
+      p.x += dx * 0.08;
+      p.y += dy * 0.08;
+    }
+
+    // 💖 HOLD (pulse + shimmer)
+    if(insanePhase === "hold" && p.tx){
+
+      let pulse = 1 + Math.sin(Date.now()*0.01)*0.3;
+      p.size = (p.baseSize || p.size) * pulse * 1.6;
+
+      p.x += Math.sin(Date.now()*0.002 + p.phase)*0.2;
+      p.y += Math.cos(Date.now()*0.002 + p.phase)*0.2;
+    }
+
+    // ✨ DISSOLVE INTO DUST
+    if(insanePhase === "dissolve"){
+
+      let angle = Math.random()*Math.PI*2;
+
+      p.x += Math.cos(angle)*2;
+      p.y += Math.sin(angle)*2;
+
+      p.size *= 0.96;
+    }
+
+  });
+
+  requestAnimationFrame(insaneLoop);
+}
+
+
+// ===============================
+// 💫 FINAL CLEAN SCENE
+// ===============================
+
+function finalizeScene(){
+
+  // remove particles visually
+  particles.forEach(p=>{
+    p.size = 0;
+  });
+
+  // darken background slightly
+  let fade = document.createElement("div");
+  fade.style.position="fixed";
+  fade.style.inset="0";
+  fade.style.background="rgba(0,0,0,0.4)";
+  fade.style.opacity="0";
+  fade.style.transition="opacity 2s ease";
+  fade.style.pointerEvents="none";
+  fade.style.zIndex="1";
+  document.body.appendChild(fade);
+
+  setTimeout(()=> fade.style.opacity=1,50);
+
+  // enhance text to final elegant state
+  if(finalElementRef){
+
+    finalElementRef.style.fontSize="52px";
+    finalElementRef.style.letterSpacing="3px";
+
+    finalElementRef.style.textShadow = `
+      0 0 20px rgba(255,150,200,0.8),
+      0 0 60px rgba(255,100,180,0.5),
+      0 0 120px rgba(255,80,160,0.4)
+    `;
+
+    // gentle breathing
+    let t=0;
+    function breathe(){
+      t+=0.02;
+
+      let scale = 1 + Math.sin(t)*0.03;
+
+      finalElementRef.style.transform =
+        `translate(-50%, -50%) scale(${scale})`;
+
+      requestAnimationFrame(breathe);
+    }
+    breathe();
+  }
+
+}
+
+
+// ===============================
+// 🚀 START LOOP SAFELY
+// ===============================
+
+setTimeout(()=>{
+  insaneLoop();
+},2000);
 </script>
 
 </body>
