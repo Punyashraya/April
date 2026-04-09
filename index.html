@@ -1742,6 +1742,117 @@ anim = function(t){
   });
 
 };
+  // ===============================
+// ✍️ HANDWRITTEN TEXT EFFECT (SAFE)
+// ===============================
+
+document.getElementById("finalBtn").addEventListener("click", ()=>{
+
+  setTimeout(()=>{
+
+    let el;
+
+    const wait = setInterval(()=>{
+      el = Array.from(document.body.children)
+        .find(e => e.innerHTML && e.innerHTML.includes("Happy Birthday"));
+
+      if(el){
+        clearInterval(wait);
+        applyHandwriting(el);
+      }
+    },50);
+
+  },400);
+
+});
+
+
+function applyHandwriting(el){
+
+  // ✨ replace content with spans per letter
+  const text = "Happy Birthday";
+  const sub = "Wewe 💕";
+
+  el.innerHTML = `
+    <div class="hw-main"></div>
+    <div class="hw-sub"></div>
+  `;
+
+  const main = el.querySelector(".hw-main");
+  const subEl = el.querySelector(".hw-sub");
+
+  // base styling
+  el.style.textAlign = "center";
+
+  main.style.fontFamily = "'Segoe Script', cursive";
+  subEl.style.fontFamily = "'Segoe Script', cursive";
+
+  main.style.fontSize = "52px";
+  subEl.style.fontSize = "26px";
+
+  main.style.letterSpacing = "2px";
+  subEl.style.marginTop = "10px";
+
+  // gradient ink
+  [main, subEl].forEach(e=>{
+    e.style.background = "linear-gradient(120deg,#ff9bb3,#ffffff,#ff9bb3)";
+    e.style.backgroundSize = "300% 100%";
+    e.style.webkitBackgroundClip = "text";
+    e.style.webkitTextFillColor = "transparent";
+    e.style.textShadow = `
+      0 0 10px rgba(255,150,200,0.6),
+      0 0 30px rgba(255,100,180,0.4)
+    `;
+  });
+
+  // ✍️ TYPE LETTER BY LETTER
+  let i = 0;
+
+  function typeMain(){
+    if(i < text.length){
+      main.innerHTML += text[i] === " " ? "&nbsp;" : text[i];
+      i++;
+      setTimeout(typeMain, 80); // speed of writing
+    } else {
+      typeSub();
+    }
+  }
+
+  function typeSub(){
+    let j = 0;
+    function t(){
+      if(j < sub.length){
+        subEl.innerHTML += sub[j] === " " ? "&nbsp;" : sub[j];
+        j++;
+        setTimeout(t, 60);
+      }
+    }
+    t();
+  }
+
+  typeMain();
+
+  // 🌊 breathing + shimmer
+  let t = 0;
+
+  function animate(){
+    t += 0.02;
+
+    let scale = 1 + Math.sin(t)*0.02;
+    let floatY = Math.sin(t*0.8)*5;
+    let shimmer = (t*60)%300;
+
+    el.style.transform =
+      `translate(-50%, calc(-50% + ${floatY}px)) scale(${scale})`;
+
+    main.style.backgroundPosition = `${shimmer}% 50%`;
+    subEl.style.backgroundPosition = `${(shimmer+50)%300}% 50%`;
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
 </script>
 
 </body>
