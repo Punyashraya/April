@@ -1172,6 +1172,177 @@ function animateParticleText(){
 
   loop();
 }
+  // ===============================
+// 📱 MOBILE + INTERACTIVE UPGRADE (SAFE ADD-ON)
+// ===============================
+
+// 📉 PERFORMANCE SCALING (auto-detect mobile)
+let isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+
+if(isMobile){
+  particles = particles.slice(0, 80);   // reduce load
+  leaves = leaves.slice(0, 500);
+}
+
+// 👆 TAP INTERACTION (particle attraction burst)
+let touchPoint = null;
+
+function triggerTouchEffect(x, y){
+  touchPoint = {x, y, life: 1};
+}
+
+addEventListener("touchstart", e=>{
+  let t = e.touches[0];
+  triggerTouchEffect(t.clientX, t.clientY);
+});
+
+addEventListener("click", e=>{
+  triggerTouchEffect(e.clientX, e.clientY);
+});
+
+// 💫 TOUCH EFFECT UPDATE
+function updateTouchEffect(){
+  if(!touchPoint) return;
+
+  particles.forEach(p=>{
+    let dx = touchPoint.x - p.x;
+    let dy = touchPoint.y - p.y;
+
+    p.x += dx * 0.02 * touchPoint.life;
+    p.y += dy * 0.02 * touchPoint.life;
+  });
+
+  touchPoint.life *= 0.92;
+
+  if(touchPoint.life < 0.05){
+    touchPoint = null;
+  }
+}
+
+// 🌊 RIPPLE VISUAL
+let ripples = [];
+
+function createRipple(x,y){
+  ripples.push({x,y,r:0,alpha:1});
+}
+
+addEventListener("touchstart", e=>{
+  let t=e.touches[0];
+  createRipple(t.clientX,t.clientY);
+});
+
+addEventListener("click", e=>{
+  createRipple(e.clientX,e.clientY);
+});
+
+function drawRipples(){
+  ripples.forEach(r=>{
+    x.beginPath();
+    x.arc(r.x,r.y,r.r,0,Math.PI*2);
+    x.strokeStyle = `rgba(255,180,200,${r.alpha})`;
+    x.lineWidth = 2;
+    x.stroke();
+
+    r.r += 2;
+    r.alpha *= 0.95;
+  });
+
+  ripples = ripples.filter(r=>r.alpha>0.05);
+}
+
+// ===============================
+// ✨ IMPROVED PARTICLE TEXT FORMATION
+// ===============================
+
+// better resolution text sampling
+function createTextPoints(text){
+
+  let off = document.createElement("canvas");
+  let ctx2 = off.getContext("2d");
+
+  off.width = 500;
+  off.height = 200;
+
+  ctx2.fillStyle = "#fff";
+  ctx2.font = "bold 60px Segoe UI";
+  ctx2.textAlign = "center";
+
+  ctx2.fillText(text, off.width/2, 110);
+
+  let data = ctx2.getImageData(0,0,off.width,off.height).data;
+
+  let points = [];
+
+  // denser sampling for smooth text
+  for(let y=0;y<off.height;y+=3){
+    for(let x2=0;x2<off.width;x2+=3){
+      let i=(y*off.width + x2)*4;
+      if(data[i+3] > 150){
+        points.push({
+          x: x2 + innerWidth/2 - off.width/2,
+          y: y + innerHeight/2 - off.height/2
+        });
+      }
+    }
+  }
+
+  return points;
+}
+
+// 🎯 IMPROVED FINAL ANIMATION
+const originalFinalBtn2 = document.getElementById("finalBtn").onclick;
+
+document.getElementById("finalBtn").onclick = function(){
+
+  originalFinalBtn2();
+
+  setTimeout(()=>{
+
+    let pts = createTextPoints("WEWE 💕");
+
+    // assign targets smartly
+    particles.forEach((p,i)=>{
+      let t = pts[i % pts.length];
+
+      p.tx = t.x;
+      p.ty = t.y;
+    });
+
+    function animateFormation(){
+
+      particles.forEach(p=>{
+        if(p.tx){
+          let dx = p.tx - p.x;
+          let dy = p.ty - p.y;
+
+          p.x += dx * 0.06;
+          p.y += dy * 0.06;
+        }
+      });
+
+      updateTouchEffect();
+      drawRipples();
+
+      requestAnimationFrame(animateFormation);
+    }
+
+    animateFormation();
+
+  }, 1200);
+};
+
+// ===============================
+// 🎯 PATCH MAIN LOOP (SAFE)
+// ===============================
+
+const originalAnimFinal = anim;
+
+anim = function(t){
+  originalAnimFinal(t);
+
+  updateTouchEffect();
+  drawRipples();
+};
 </script>
 
 </body>
