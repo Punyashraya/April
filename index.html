@@ -1536,6 +1536,55 @@ function finalizeScene(){
 setTimeout(()=>{
   insaneLoop();
 },2000);
+  // ===============================
+// 🌠 SHOOTING STARS
+// ===============================
+
+let shootingStars = [];
+
+function spawnStar(){
+  shootingStars.push({
+    x: Math.random()*innerWidth,
+    y: Math.random()*innerHeight*0.5,
+    vx: 6 + Math.random()*4,
+    vy: 2 + Math.random()*2,
+    life: 1
+  });
+}
+
+// spawn occasionally (not too many)
+setInterval(()=>{
+  if(Math.random() < 0.5){
+    spawnStar();
+  }
+}, 1200);
+
+function drawShootingStars(){
+
+  shootingStars.forEach(s=>{
+
+    // trail
+    x.beginPath();
+    x.moveTo(s.x, s.y);
+    x.lineTo(s.x - s.vx*5, s.y - s.vy*5);
+    x.strokeStyle = `rgba(255,255,255,${s.life})`;
+    x.lineWidth = 2;
+    x.stroke();
+
+    s.x += s.vx;
+    s.y += s.vy;
+    s.life *= 0.96;
+  });
+
+  shootingStars = shootingStars.filter(s=>s.life > 0.1);
+}
+
+// patch into loop safely
+const prevAnimStar = anim;
+anim = function(t){
+  prevAnimStar(t);
+  drawShootingStars();
+};
 </script>
 
 </body>
