@@ -1586,53 +1586,161 @@ anim = function(t){
   drawShootingStars();
 };
   // ===============================
-// 🌠 SHOOTING STARS
+// 👑 FINAL BOSS (SAFE VERSION)
 // ===============================
 
-let shootingStars = [];
+let bossMode = false;
+let bossStep = 0;
+let bossTimer = 0;
+let bossTargets = [];
 
-function spawnStar(){
-  shootingStars.push({
-    x: Math.random()*innerWidth,
-    y: Math.random()*innerHeight*0.5,
-    vx: 6 + Math.random()*4,
-    vy: 2 + Math.random()*2,
-    life: 1
-  });
-}
+// hook into existing final button
+const oldFinalClick = document.getElementById("finalBtn").onclick;
 
-// spawn occasionally (not too many)
-setInterval(()=>{
-  if(Math.random() < 0.5){
-    spawnStar();
+document.getElementById("finalBtn").onclick = function(){
+  oldFinalClick();
+
+  setTimeout(()=>{
+    bossMode = true;
+    bossStep = 0;
+    bossTimer = 0;
+    createHeartTargets();
+  },1200);
+};
+
+
+// ===============================
+// ❤️ HEART TARGETS
+// ===============================
+
+function createHeartTargets(){
+
+  bossTargets = [];
+
+  let cx = innerWidth/2;
+  let cy = innerHeight/2;
+
+  for(let t=0;t<Math.PI*2;t+=0.08){
+
+    let xh = 16*Math.pow(Math.sin(t),3);
+    let yh = -(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+
+    bossTargets.push({
+      x: cx + xh*10,
+      y: cy + yh*10
+    });
   }
-}, 1200);
 
-function drawShootingStars(){
-
-  shootingStars.forEach(s=>{
-
-    // trail
-    x.beginPath();
-    x.moveTo(s.x, s.y);
-    x.lineTo(s.x - s.vx*5, s.y - s.vy*5);
-    x.strokeStyle = `rgba(255,255,255,${s.life})`;
-    x.lineWidth = 2;
-    x.stroke();
-
-    s.x += s.vx;
-    s.y += s.vy;
-    s.life *= 0.96;
-  });
-
-  shootingStars = shootingStars.filter(s=>s.life > 0.1);
+  assignBossTargets();
 }
 
-// patch into loop safely
-const prevAnimStar = anim;
+
+// ===============================
+// ✨ TEXT TARGETS
+// ===============================
+
+function createTextTargets(){
+
+  let off = document.createElement("canvas");
+  let ctx2 = off.getContext("2d");
+
+  off.width = 400;
+  off.height = 180;
+
+  ctx2.fillStyle="#fff";
+  ctx2.font="bold 50px Segoe UI";
+  ctx2.textAlign="center";
+
+  ctx2.fillText("Happy Birthday", 200, 70);
+  ctx2.fillText("Wewe 💕", 200, 130);
+
+  let data = ctx2.getImageData(0,0,400,180).data;
+
+  bossTargets = [];
+
+  for(let y=0;y<180;y+=4){
+    for(let x=0;x<400;x+=4){
+      let i=(y*400+x)*4;
+      if(data[i+3]>150){
+        bossTargets.push({
+          x: x + innerWidth/2 - 200,
+          y: y + innerHeight/2 - 90
+        });
+      }
+    }
+  }
+
+  assignBossTargets();
+}
+
+
+// assign targets safely
+function assignBossTargets(){
+  particles.forEach((p,i)=>{
+    let t = bossTargets[i % bossTargets.length];
+    p.tx = t.x;
+    p.ty = t.y;
+  });
+}
+
+
+// ===============================
+// 🎬 PATCH INTO MAIN ANIMATION
+// ===============================
+
+const prevAnimBoss = anim;
+
 anim = function(t){
-  prevAnimStar(t);
-  drawShootingStars();
+
+  prevAnimBoss(t);
+
+  if(!bossMode) return;
+
+  bossTimer += 0.016;
+
+  // phase flow
+  if(bossStep === 0 && bossTimer > 2.5){
+    bossStep = 1;
+    bossTimer = 0;
+    createTextTargets();
+  }
+
+  if(bossStep === 1 && bossTimer > 3){
+    bossStep = 2;
+    bossTimer = 0;
+  }
+
+  if(bossStep === 2 && bossTimer > 3){
+    bossStep = 3;
+    bossTimer = 0;
+  }
+
+  particles.forEach(p=>{
+
+    if(p.tx){
+      let dx = p.tx - p.x;
+      let dy = p.ty - p.y;
+
+      p.x += dx * 0.07;
+      p.y += dy * 0.07;
+    }
+
+    // 💓 hold pulse
+    if(bossStep === 2){
+      let pulse = 1 + Math.sin(Date.now()*0.01)*0.25;
+      p.size = (p.baseSize||p.size) * pulse * 1.5;
+    }
+
+    // ✨ dissolve
+    if(bossStep === 3){
+      let a = Math.random()*Math.PI*2;
+      p.x += Math.cos(a)*1.5;
+      p.y += Math.sin(a)*1.5;
+      p.size *= 0.96;
+    }
+
+  });
+
 };
 </script>
 
