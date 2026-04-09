@@ -718,6 +718,188 @@ drawParticle = function(p,t){
   // restore size (critical fix)
   p.size = originalSize;
 };
+  // ===============================
+// 🎬 PHASE 3 CINEMATIC ADD-ON (SAFE)
+// ===============================
+
+// hook into existing final button WITHOUT replacing it
+document.getElementById("finalBtn").addEventListener("click", ()=>{
+
+  // delay slightly so original logic runs first
+  setTimeout(()=>{
+
+    // 🌟 EXPLOSION
+    particles.forEach(p=>{
+      p.x += (Math.random()-0.5)*300;
+      p.y += (Math.random()-0.5)*300;
+    });
+
+    // ⚡ FLASH
+    let flash=document.createElement("div");
+    flash.style.position="fixed";
+    flash.style.inset="0";
+    flash.style.background="white";
+    flash.style.opacity="0.85";
+    flash.style.transition="opacity 1s ease";
+    flash.style.pointerEvents="none";
+    flash.style.zIndex="20";
+    document.body.appendChild(flash);
+
+    setTimeout(()=> flash.style.opacity=0,50);
+    setTimeout(()=> flash.remove(),1000);
+
+    // 🕊️ SLOW MOTION
+    particles.forEach(p=>{
+      p.speed *= 0.3;
+    });
+
+    // 💓 DOUBLE HEARTBEAT
+    setTimeout(()=>{
+      if(typeof playHeartbeat === "function"){
+        playHeartbeat();
+        playHeartbeat();
+      }
+    },200);
+
+    // 🌫️ BACKGROUND FOCUS
+    c.style.transition="filter 1s ease";
+    c.style.filter="blur(2px) brightness(0.8)";
+    setTimeout(()=> c.style.filter="none",2000);
+
+    // 💖 FIND FINAL TEXT (created by your base code)
+    let finalText;
+
+    const waitForText = setInterval(()=>{
+      finalText = Array.from(document.body.children)
+        .find(el => el.innerHTML && el.innerHTML.includes("Happy Birthday"));
+
+      if(finalText){
+        clearInterval(waitForText);
+        enhanceFinalText(finalText);
+      }
+    },50);
+
+  },100); // small delay so base click executes first
+});
+
+
+// ===============================
+// 💖 ENHANCE FINAL TEXT (NO REPLACE)
+// ===============================
+
+function enhanceFinalText(el){
+
+  // ✍️ TYPEWRITER EFFECT (replace content safely)
+  const message = el.innerText.replace(/\n/g," ").trim() || "Happy Birthday 💕";
+
+  el.innerHTML = "";
+
+  let i=0;
+  function type(){
+    if(i < message.length){
+      el.innerHTML += message[i] === " " ? "&nbsp;" : message[i];
+      i++;
+      setTimeout(type,50);
+    }
+  }
+  type();
+
+  // 🌈 GRADIENT STYLE
+  el.style.background="linear-gradient(90deg,#ff8fa3,#ffd1dc,#ff8fa3)";
+  el.style.backgroundSize="200% 100%";
+  el.style.webkitBackgroundClip="text";
+  el.style.webkitTextFillColor="transparent";
+
+  // 💫 FLOAT + GLOW LOOP
+  let t=0;
+  function animate(){
+    t+=0.02;
+
+    let floatY = Math.sin(t*0.8)*6;
+    let scale = 1 + Math.sin(t)*0.02;
+    let glow = 20 + Math.sin(t*2)*15;
+
+    el.style.transform =
+      `translate(-50%, calc(-50% + ${floatY}px)) scale(${scale})`;
+
+    el.style.textShadow = `
+      0 0 ${glow}px rgba(255,120,160,0.6),
+      0 0 ${glow*2}px rgba(255,80,140,0.4)
+    `;
+
+    el.style.backgroundPosition = `${(t*40)%200}% 50%`;
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // 💞 ORBIT HEARTS
+  createOrbitHearts();
+
+  // 🌌 PARTICLE ATTRACTION
+  attractParticlesToCenter();
+}
+
+
+// ===============================
+// 💞 ORBITING HEARTS
+// ===============================
+
+function createOrbitHearts(){
+
+  let hearts=[];
+
+  for(let i=0;i<30;i++){
+    hearts.push({
+      angle:Math.random()*Math.PI*2,
+      radius:Math.random()*80+40,
+      speed:Math.random()*0.01+0.005
+    });
+  }
+
+  function draw(){
+    hearts.forEach(h=>{
+      h.angle+=h.speed;
+
+      let xPos = innerWidth/2 + Math.cos(h.angle)*h.radius;
+      let yPos = innerHeight/2 + Math.sin(h.angle)*h.radius;
+
+      x.beginPath();
+      x.arc(xPos,yPos,2.5,0,Math.PI*2);
+      x.fillStyle="rgba(255,120,160,0.8)";
+      x.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+}
+
+
+// ===============================
+// 🌌 PARTICLE ATTRACTION
+// ===============================
+
+function attractParticlesToCenter(){
+
+  function loop(){
+    let cx=innerWidth/2;
+    let cy=innerHeight/2;
+
+    particles.forEach(p=>{
+      let dx=cx-p.x;
+      let dy=cy-p.y;
+
+      p.x += dx*0.01;
+      p.y += dy*0.01;
+    });
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
 </script>
 
 </body>
